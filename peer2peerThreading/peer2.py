@@ -9,11 +9,11 @@ class ChatThread(Thread):
         while True:
             name = current_thread().getName()
             if name == 'Sender':
-                data = input('client:\n')
+                data = input('')
                 self.conn.send(data.encode())
             elif name == 'Receiver':
                 recData = self.conn.recv(1024).decode()
-                print('server: \n{}'.format(recData))
+                print('=>: {}'.format(recData))
         
 client = socket()
 client.connect(('127.0.0.1',1234))
@@ -24,3 +24,5 @@ receiver = ChatThread(client)
 receiver.setName('Receiver')
 sender.start()
 receiver.start()
+# sender.join()
+# receiver.join()
