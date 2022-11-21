@@ -1,27 +1,31 @@
 from socket import *
 from threading import *
 
+PORT = 1234
+# host name of peer1
+HOST = gethostname()
+
+print(HOST)
+
 class ChatThread(Thread):
-    def __init__(self,conn):
+    def __init__(self,conn,name):
         Thread.__init__(self)
         self.conn = conn
+        self.name = name
     def run(self):
         while True:
-            name = current_thread().getName()
-            if name == 'Sender':
+            if self.name == 'Sender':
                 data = input('')
                 self.conn.send(data.encode())
-            elif name == 'Receiver':
+            elif self.name == 'Receiver':
                 recData = self.conn.recv(1024).decode()
-                print('=>: {}'.format(recData))
+                print('=> {}'.format(recData))
         
 client = socket()
-client.connect(('127.0.0.1',1234))
+client.connect((HOST, PORT))
 
-sender = ChatThread(client)
-sender.setName('Sender')
-receiver = ChatThread(client)
-receiver.setName('Receiver')
+sender = ChatThread(client, 'Sender')
+receiver = ChatThread(client, 'Receiver')
 sender.start()
 receiver.start()
 # sender.join()

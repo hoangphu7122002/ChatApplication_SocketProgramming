@@ -1,29 +1,30 @@
 from socket import *
 from threading import *
 
+# HOST = gethostname()
+PORT = 1234
+
 class ChatThread(Thread):
-    def __init__(self,conn):
+    def __init__(self,conn,name):
         Thread.__init__(self)
         self.conn = conn
+        self.name = name
     def run(self):
         while True:
-            name = current_thread().getName()
-            if name == 'Sender':
+            if self.name == 'Sender':
                 data = input('')
                 self.conn.send(data.encode())
-            elif name == 'Receiver':
+            elif self.name == 'Receiver':
                 recData = self.conn.recv(1024).decode()
                 print('=> {}'.format(recData))
         
 server = socket(AF_INET,SOCK_STREAM)
-server.bind(('127.0.0.1',1234))
-server.listen(4)
+server.bind(('', PORT))
+server.listen()
 connection, address = server.accept()
 
-sender = ChatThread(connection)
-sender.setName('Sender')
-receiver = ChatThread(connection)
-receiver.setName('Receiver')
+sender = ChatThread(connection, 'Sender')
+receiver = ChatThread(connection,'Receiver')
 sender.start()
 receiver.start()
 # sender.join()
