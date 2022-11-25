@@ -1,4 +1,4 @@
-from USER import User
+from user import User
 from hyper_parameter import *
 
 class PeerServer(User):

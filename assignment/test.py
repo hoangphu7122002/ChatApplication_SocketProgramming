@@ -1,8 +1,4 @@
-dict_test = {
-    "key0" : "value0",
-    "key1" : "value1",
-    "key2" : "value2"
-}
+str_std = "123"
+str_std1 = "124"
 
-for key,val in dict_test.items():
-    print(key,val)
+print(str_std.count(str_std1))
