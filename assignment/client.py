@@ -14,7 +14,6 @@ p2p_server_port = int(sys.argv[4])
 
 peer_list = []
 my_id_peer = None
-flag = 0
 
 #to connect server
 server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -58,43 +57,38 @@ def connect_server():
     
 def thread_server_read():
     while True:
-        try:
-            global peer_list
-            global my_id_peer
-            global flag
-            if flag == 1:
-                return
-            msg = input('>:')
-            if is_command(msg,'/quit'):
-                message_request = {}
-                message_request["type"] = CHAT_PROTOCOL_BYE
-                message_request["peer_name"] = name
-                message_request["port"] = our_port
-                message_request["id_peer"] = my_id_peer
-                server.send(send_client_message(message_request))
-            if is_command(msg,'/update'):
-                message_request = {}
-                message_request["type"] = CHAT_PROTOCOL_UPDATE
-                message_request["peer_name"] = name
-                message_request["port"] = our_port
-                message_request["id_peer"] = my_id_peer
-                server.send(send_client_message(message_request))
-            if is_command(msg,'/help'):
-                print_help(name)
-            if is_command(msg,'/show_connection'):
-                pass
-            if is_command(msg,'/show_peers'):
-                
-                print("test: ",peer_list)
-                print_peer_table(name, peer_list) 
-        except :
-            return
-        
+        global peer_list
+        global my_id_peer
+
+        msg = input('>:')
+        if is_command(msg,'/quit'):
+            message_request = {}
+            message_request["type"] = CHAT_PROTOCOL_BYE
+            message_request["peer_name"] = name
+            message_request["port"] = our_port
+            message_request["id_peer"] = my_id_peer
+            server.send(send_client_message(message_request))
+        if is_command(msg,'/update'):
+            message_request = {}
+            message_request["type"] = CHAT_PROTOCOL_UPDATE
+            message_request["peer_name"] = name
+            message_request["port"] = our_port
+            message_request["id_peer"] = my_id_peer
+            server.send(send_client_message(message_request))
+        if is_command(msg,'/help'):
+            print_help(name)
+        if is_command(msg,'/show_connection'):
+            pass
+        if is_command(msg,'/show_peers'):
+            
+            print("test: ",peer_list)
+            print_peer_table(name, peer_list) 
+        else:
+            pass
         
 def thread_server_listen():
     while True:
         try:
-            global flag
             data = get_client_data(server)
             if data:
                 if data["type"] == CHAT_PROTOCOL_HI_ACK:
@@ -103,29 +97,24 @@ def thread_server_listen():
                     peer_list = data["peer_list"]
                     global my_id_peer 
                     my_id_peer = data["id_peer"]
-                    #print("peer_list: ", peer_list)
-                    #print("my id peer: ", my_id_peer)
+                    print("peer_list: ", peer_list)
+                    print("my id peer: ", my_id_peer)
                     print('Server:> the list of peers was received correctly, '+str(len(peer_list))+' total active peers')
                 if data["type"] == CHAT_PROTOCOL_BYE_ACK:
+                    server.close()
                     print("Server:> Closing connections with server.......")
                     print('\n\nGoodbye '+name+'!\n')
                     input("Press Enter to continue...")
-                    flag = 1
-                    server.close()
-                    return
+                    sys.exit(0)
                 if data["type"] == CHAT_PROTOCOL_UPDATE_ACK:
                     peer_list = data["peer_list"]
                     print('Server:> the list of peers was received correctly, '+str(len(peer_list))+' total active peers')
             else:
-                flag = 1
                 server.close()
                 print("Goodbye!!!")
-                return
         except:
-            flag = 1
             server.close()
             print("Goodbye!!!")
-            return
         
 def thread_client():
     while True:
@@ -148,10 +137,8 @@ if __name__ == "__main__":
         server.send(send_client_message(message_first))
         server_listen = Thread(target= thread_server_listen)
         server_read = Thread(target= thread_server_read)
-        
         server_listen.start()
         server_read.start()
-            
     else:
         print("connection fail, please reset desktop!!")
         

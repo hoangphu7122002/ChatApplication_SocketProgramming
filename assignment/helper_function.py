@@ -19,9 +19,5 @@ def print_peer_table(name, peer_list):
     print('Hi '+name+' !\n\n')
     print('\t\t-- Peer table --\n')
     for peer in peer_list:
-        print(peer[0],type(peer[0]))
-        print(peer[1],type(peer[1]))
-        print(peer[2],type(peer[2]))
-        print(peer[3],type(peer[3]))
         print('+ Name: '+peer[0]+'\t | Port: '+str(peer[1])+' | Ip: '+peer[2]+' | Id_peer: '+str(peer[3]))
     input("\n\n\nPress Enter to continue...")
