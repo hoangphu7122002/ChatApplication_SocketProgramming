@@ -21,10 +21,10 @@ ALREADY_CONNECT = 10
 FAIL_CONNECT = 10
 
 user1 = { "user_name": "HP7122002",
-          "password": "071202"}
+          "password": "123456"}
 
 user2 = { "user_name": "GP2002",
-          "password": "wtf" }
+          "password": "123456" }
         
 user3 = { "user_name": "dakLoc",
           "password": "123456"}
