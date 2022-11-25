@@ -1,4 +1,7 @@
+python server.py 5000
 python client.py HP7122002 6000 localhost 5000
 python client.py GP2002 6001 localhost 5000
 python client.py dakLoc 6002 localhost 5000
 python client.py nguyen 6003 localhost 5000
+
+/help for client usage
