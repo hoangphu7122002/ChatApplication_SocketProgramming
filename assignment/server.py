@@ -1,7 +1,6 @@
 import socket
 import threading
 from hyper_parameter import *
-import select
 import pickle
 import sys
 

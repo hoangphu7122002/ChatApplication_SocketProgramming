@@ -130,20 +130,15 @@ def thread_read():
             #to connect with someone
             peer_to_connect = []
             id_to_connect = getPeerId(msg)
-            print("id_to_connect: ",id_to_connect)
-            print("active_con",active_conn)
             if not is_already_Connected(active_conn,id_to_connect) and id_to_connect != 0:
                 try:
                     peer_to_connect = get_peer_element(peer_list,id_to_connect)
                     print(peer_to_connect)
                     aux_peer = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                     aux_peer.connect((peer_to_connect[2],peer_to_connect[1])) #aka: port, hostname
-                    print("!!!!!!!!!!!!")
                     socket_peer_list.append(aux_peer)
-                    print("<<<<<<<<<<<<")
                     print("connect with {} is established".format(peer_to_connect[0]))
                     time.sleep(1)
-                    print("here1")
                     message_request = {}
                     message_request["type"] = CHAT_PROTOCOL_CONNECT
                     message_request["peer_name"] = name
@@ -151,7 +146,6 @@ def thread_read():
                     message_request["ip_peer"] = my_ip_addr
                     message_request["id_peer"] = my_id_peer
                     aux_peer.send(send_client_message(message_request))
-                    print("here2")
                 except:
                     print("id_peer: {} not found...".format(id_to_connect))
                     continue
