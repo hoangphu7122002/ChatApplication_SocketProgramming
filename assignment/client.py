@@ -28,7 +28,7 @@ ours_server.listen(QUEUE_CLIENT)
 
 def get_peer_element(peer_list, my_peer_id):
     for peer in peer_list:
-        if peer[3] is my_peer_id:
+        if peer[3] == my_peer_id:
             return peer    
 
 def is_already_Connected(active_conn, id_peer):    
@@ -103,7 +103,7 @@ def thread_read():
         global peer_list
         global my_id_peer
         global socket_peer_list
-
+        global active_conn
         msg = input('>:')
         if is_command(msg,'/quit'):
             message_request = {}
@@ -117,6 +117,7 @@ def thread_read():
             message_request["type"] = CHAT_PROTOCOL_UPDATE
             message_request["peer_name"] = name
             message_request["port"] = our_port
+            # message_request["id_peer"] = my_id_peer
             message_request["id_peer"] = my_id_peer
             server.send(send_client_message(message_request))
         if is_command(msg,'/help'):
@@ -129,13 +130,20 @@ def thread_read():
             #to connect with someone
             peer_to_connect = []
             id_to_connect = getPeerId(msg)
+            print("id_to_connect: ",id_to_connect)
+            print("active_con",active_conn)
             if not is_already_Connected(active_conn,id_to_connect) and id_to_connect != 0:
                 try:
                     peer_to_connect = get_peer_element(peer_list,id_to_connect)
-                    aux_peer = socket.socket((peer_to_connect[2],peer_to_connect[1])) #aka: port, hostname
+                    print(peer_to_connect)
+                    aux_peer = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    aux_peer.connect((peer_to_connect[2],peer_to_connect[1])) #aka: port, hostname
+                    print("!!!!!!!!!!!!")
                     socket_peer_list.append(aux_peer)
+                    print("<<<<<<<<<<<<")
                     print("connect with {} is established".format(peer_to_connect[0]))
                     time.sleep(1)
+                    print("here1")
                     message_request = {}
                     message_request["type"] = CHAT_PROTOCOL_CONNECT
                     message_request["peer_name"] = name
@@ -143,6 +151,7 @@ def thread_read():
                     message_request["ip_peer"] = my_ip_addr
                     message_request["id_peer"] = my_id_peer
                     aux_peer.send(send_client_message(message_request))
+                    print("here2")
                 except:
                     print("id_peer: {} not found...".format(id_to_connect))
                     continue
@@ -174,7 +183,7 @@ def thread_read():
             msg_to_send = get_msg_to_send(msg)
             try:
                 id_peer_to_send = getPeerId(msg)
-                if is_already_Connected(active_conn_sock,id_peer_to_send):
+                if is_already_Connected(active_conn,id_peer_to_send):
                     peer_to_send = get_sockpeer_element(active_conn_sock,id_peer_to_send)
                     message_request = {}
                     message_request["type"] = CHAT_PROTOCOL_MSG
@@ -229,6 +238,10 @@ def thread_our_server_listen():
         global socket_peer_list
         conn, addr = ours_server.accept()
         socket_peer_list.append(conn)
+
+def thread_our_server_handle():
+    while True:
+        global socket_peer_list
         for peer in socket_peer_list:
             global active_conn
             global active_conn_sock
@@ -237,10 +250,10 @@ def thread_our_server_listen():
                 if data:
                     if data["type"] == CHAT_PROTOCOL_CONNECT:
                         sock_and_conn = []
-                        active_conn.append([data["peer_name"],data["port"],data["ip"],data["id_peer"]])
-                        sock_and_conn.append([data["peer_name"],data["port"],data["ip"],data["id_peer"]])
+                        active_conn.append([data["peer_name"],data["port"],data["ip_peer"],data["id_peer"]])
+                        sock_and_conn.append([data["peer_name"],data["port"],data["ip_peer"],data["id_peer"]])
                         sock_and_conn.append(peer)
-                        active_conn.append(sock_and_conn)
+                        active_conn_sock.append(sock_and_conn)
                         #=====================================
                         message_request = {}
                         message_request["type"] = CHAT_PROTOCOL_CONNECT_ACK
@@ -253,16 +266,16 @@ def thread_our_server_listen():
                         print('{} has connected with you'.format(data["peer_name"]))
                     if data["type"] == CHAT_PROTOCOL_CONNECT_ACK:
                         sock_and_conn = []
-                        active_conn.append([data["peer_name"],data["port"],data["ip"],data["id_peer"]])
-                        sock_and_conn.append([data["peer_name"],data["port"],data["ip"],data["id_peer"]])
+                        active_conn.append([data["peer_name"],data["port"],data["ip_peer"],data["id_peer"]])
+                        sock_and_conn.append([data["peer_name"],data["port"],data["ip_peer"],data["id_peer"]])
                         sock_and_conn.append(peer)
                         active_conn_sock.append(sock_and_conn)
                         print("connection accepted!!!")
                     if data["type"] == CHAT_PROTOCOL_DIS:
                         #manage incoming disconnection
                         sock_and_conn_aux = []
-                        active_conn.remove([data["peer_name"],data["port"],data["ip"],data["id_peer"]])
-                        sock_and_conn_aux.append([data["peer_name"],data["port"],data["ip"],data["id_peer"]])
+                        active_conn.remove([data["peer_name"],data["port"],data["ip_peer"],data["id_peer"]])
+                        sock_and_conn_aux.append([data["peer_name"],data["port"],data["ip_peer"],data["id_peer"]])
                         sock_and_conn_aux.append(peer)
                         active_conn_sock.remove(sock_and_conn_aux)
                         socket_peer_list.remove(peer)
@@ -277,8 +290,8 @@ def thread_our_server_listen():
                         peer.send(send_client_message(message_request))
                     if data["type"] == CHAT_PROTOCOL_DIS_ACK:
                         sock_and_conn_aux = []
-                        active_conn.remove([data["peer_name"],data["port"],data["ip"],data["id_peer"]])
-                        sock_and_conn_aux.append([data["peer_name"],data["port"],data["ip"],data["id_peer"]])
+                        active_conn.remove([data["peer_name"],data["port"],data["ip_peer"],data["id_peer"]])
+                        sock_and_conn_aux.append([data["peer_name"],data["port"],data["ip_peer"],data["id_peer"]])
                         sock_and_conn_aux.append(peer)
                         active_conn_sock.remove(sock_and_conn_aux)
                         socket_peer_list.remove(peer)
@@ -307,6 +320,8 @@ if __name__ == "__main__":
         server_listen = Thread(target= thread_server_listen)
         server_listen.start()
     ours_server_listen = Thread(target= thread_our_server_listen)
+    ours_server_handle = Thread(target=thread_our_server_handle)
     server_read = Thread(target= thread_read)
     server_read.start()
     ours_server_listen.start()
+    ours_server_handle.start()

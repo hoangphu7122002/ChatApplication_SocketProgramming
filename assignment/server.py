@@ -71,7 +71,7 @@ class Server:
                 return client[1]
     
     def conservation(self,client_socket):
-        global save_remove
+        save_remove = None
         while True:
             try:
                 message_user = self.receive_message(client_socket)

@@ -23,6 +23,7 @@ def print_peer_table(name, peer_list):
 def print_conn_table(name, active_conn):
     print('Hi '+name+' !\n\n')
     print('\t\t-- Active connections table --\n')
+    print(active_conn)
     for peer in active_conn:
         print('+ Name: '+peer[0]+'\t | Port: '+str(peer[1])+' | Ip: '+peer[2]+' | Id_peer: '+str(peer[3]))
     input("\n\n\nPress Enter to continue...")
