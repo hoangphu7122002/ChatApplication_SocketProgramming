@@ -12,6 +12,9 @@ def print_help(name):
     print('\t/connection [id]\tTo connect with your peers')
     print('\t/dis_connection [id]\tTo disconnect with your peers')
     print('\t/msg\t\tTo send a msg to some connected peer')
+    print('\t/transfer_file\t\tTo send a file to some connected peer')
+    print('\t/transfer_group\t\tTo send a file to some connected group')
+    print('\t/chat_group\t\tTo send a msg to some connected group')
     print('\t\t\tUsage: /msg [id] messsage\n\n\t\t\tExample: /msg 1 Hi everyone! :)')     
     
     input("Press Enter to continue...")
