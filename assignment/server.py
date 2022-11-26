@@ -104,7 +104,7 @@ class Server:
                     client_socket.send(self.server_message(message_send))
                     self.sockets_list.remove(client_socket)
                     self.remove_client(client_socket)
-                    self.clients_banded[message_send["peer_name"]] = 0
+                    self.clients_banded[message_user["peer_name"]] = 0
                     client_socket.close()
                     return 
                 elif message_user["type"] == CHAT_PROTOCOL_UPDATE:
@@ -117,7 +117,7 @@ class Server:
                 self.sockets_list.remove(client_socket)
                 self.remove_client(client_socket)
                 client_socket.close()
-                self.clients_banded[message_send["peer_name"]] = 0
+                self.clients_banded[message_user["peer_name"]] = 0
                 return
     
     def run(self):
