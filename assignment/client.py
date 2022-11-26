@@ -6,6 +6,7 @@ import signal
 import sys
 from helper_function import *
 import time    
+import os
     
 name = sys.argv[1]
 our_port = int(sys.argv[2])
@@ -13,6 +14,12 @@ p2p_server_addr = sys.argv[3]
 p2p_server_port = int(sys.argv[4])
 #to modify later
 my_ip_addr = '127.0.0.1'
+
+#thread our_server    
+active_conn = []
+active_conn_sock = []    
+socket_peer_list = []     
+    
 
 peer_list = []
 my_id_peer = None
@@ -42,11 +49,6 @@ def connect_server():
         return False
     return True
     
-#thread our_server    
-active_conn = []
-active_conn_sock = []    
-socket_peer_list = []     
-    
 def thread_read():
     while True:
         global peer_list
@@ -54,6 +56,52 @@ def thread_read():
         global socket_peer_list
         global active_conn
         msg = input('>:')
+        if is_command(msg,'/transfer_file'):
+            path_file = msg.split(' ')[2]
+            id_peer = msg.split(' ')[1]
+            if os.path.exists("{}/{}".format(name,path_file)) == False:
+                print("file {} not exist!!".format(path_file))
+            try:
+                id_peer = int(id_peer)
+                if is_already_Connected(active_conn,id_peer):
+                    peer_to_send = get_sockpeer_element(active_conn_sock,id_peer)
+                    message_request = {}
+                    message_request["type"] = CHAT_PROTOCOL_TRANSFER_FILE
+                    message_request["peer_name"] = name
+                    message_request["port"] = our_port
+                    message_request["ip_peer"] = my_ip_addr
+                    message_request["id_peer"] = my_id_peer
+                    message_request["file_name"] = path_file 
+                    data = open("{}/{}".format(name,path_file), 'rb').read()        
+                    message_request["data"] = data    
+                    peer_to_send.sendall(send_client_message(message_request))
+                    print("file {} has been send to: {}".format(path_file,id_peer))
+                else:
+                    print("id_peer: {} not found...".format(id_peer_to_send))
+            except:
+                print("invalid id peer")
+        if is_command(msg,'/transfer_group'):
+            path_file = msg.split(' ')[1]
+            if os.path.exists("{}/{}".format(name,path_file)) == False:
+                print("file {} not exist!!".format(path_file))
+                continue
+            message_request = {}
+            message_request["type"] = CHAT_PROTOCOL_TRANSFER_GROUP
+            message_request["peer_name"] = name
+            message_request["port"] = our_port
+            message_request["id_peer"] = my_id_peer
+            message_request["file_name"] = path_file
+            data = open("{}/{}".format(name,path_file), 'rb').read()        
+            message_request["data"] = data    
+            server.send(send_client_message(message_request))        
+        if is_command(msg,'/chat_group'):
+            message_request = {}
+            message_request["type"] = CHAT_PROTOCOL_CHAT_GROUP
+            message_request["peer_name"] = name
+            message_request["port"] = our_port
+            message_request["id_peer"] = my_id_peer
+            message_request["message"] = get_msg_to_send(msg,1)
+            server.send(send_client_message(message_request))        
         if is_command(msg,'/quit'):
             message_request = {}
             message_request["type"] = CHAT_PROTOCOL_BYE
@@ -149,14 +197,15 @@ def thread_server_listen():
         try:
             data = get_client_data(server)
             if data:
+                if data["type"] == CHAT_PROTOCOL_CHAT_GROUP_ACK:
+                    _name = data["peer_name"]
+                    msg = data["message"]
+                    print("{}>{}".format(_name,msg))
                 if data["type"] == CHAT_PROTOCOL_HI_ACK:
-
                     global peer_list 
                     global my_id_peer  
                     peer_list = data["peer_list"]
                     my_id_peer = data["id_peer"]
-                    print("peer_list: ", peer_list)
-                    print("my id peer: ", my_id_peer)
                     print('Server:> the list of peers was received correctly, '+str(len(peer_list))+' total active peers')
                 if data["type"] == CHAT_PROTOCOL_BYE_ACK:
                     server.close()
@@ -167,6 +216,13 @@ def thread_server_listen():
                 if data["type"] == CHAT_PROTOCOL_UPDATE_ACK:
                     peer_list = data["peer_list"]
                     print('Server:> the list of peers was received correctly, '+str(len(peer_list))+' total active peers')
+                if data["type"] == CHAT_PROTOCOL_TRANSFER_GROUP_ACK:
+                    peer_name = data["peer_name"]
+                    data_file = data["data"]
+                    file_name = data["file_name"]
+                    with open("{}/{}".format(name,file_name),'wb') as f:
+                        f.write(data_file)
+                    print("file {} transfer success from {} to {}!!".format(file_name,peer_name,name))
             else:
                 server.close()
                 print("Goodbye!!!")
@@ -179,7 +235,7 @@ def thread_server_listen():
 def thread_our_server_listen():
     while True:
         global socket_peer_list
-        conn, addr = ours_server.accept()
+        conn, _ = ours_server.accept()
         socket_peer_list.append(conn)
 
 def thread_our_server_handle():
@@ -242,6 +298,13 @@ def thread_our_server_handle():
                         print('disconnected from: ' + data["peer_name"])
                     if data["type"] == CHAT_PROTOCOL_MSG:
                         print("{}@{} > {}".format(data["peer_name"],name,data["message"]))
+                    if data["type"] == CHAT_PROTOCOL_TRANSFER_FILE:
+                        peer_name = data["peer_name"]
+                        file_name = data["file_name"]
+                        file_data = data["data"]
+                        with open("{}/{}".format(name,file_name),'wb') as f:
+                            f.write(file_data)
+                        print("file {} transfer success from {}!!".format(file_name,peer_name))
                 else:
                     #if no data
                     socket_peer_list.remove(peer)
@@ -251,8 +314,6 @@ if __name__ == "__main__":
     if len(sys.argv) != 5:
         print('Error: usage: ./' + sys.argv[0] + ' <username> <your_listen_port> <IP_P2P_server> <Port>')
         sys.exit(0)
-    #handel Ctrl+C
-    signal.signal(signal.SIGINT, signal_handler)
     if connect_server():
         message_first = {}
         message_first["type"] = CHAT_PROTOCOL_HI

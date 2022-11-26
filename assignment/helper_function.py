@@ -53,10 +53,10 @@ def getPeerId(msg):
     except:
         return 0
 
-def get_msg_to_send(msg):
+def get_msg_to_send(msg,k=2):
     text_l = msg.split(' ')
     message = ''
-    for i in range(2,len(text_l)):
+    for i in range(k,len(text_l)):
         message = message + text_l[i]
         if i != len(text_l) - 1:
             message = message + ' '
@@ -78,6 +78,3 @@ def get_client_data(server):
 def is_command(msg, str_cmd):
     return msg.count(str_cmd)    
     
-#Handler CTRL+C - Close connection with server
-def signal_handler(sig, frame):
-    pass
