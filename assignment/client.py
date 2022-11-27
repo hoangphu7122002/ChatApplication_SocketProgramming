@@ -132,6 +132,7 @@ def thread_read():
                     peer_to_connect = get_peer_element(peer_list,id_to_connect)
                     print(peer_to_connect)
                     aux_peer = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    print("peer_to_connect: ",peer_to_connect[2],peer_to_connect[1])
                     aux_peer.connect((peer_to_connect[2],peer_to_connect[1])) #aka: port, hostname
                     socket_peer_list.append(aux_peer)
                     print("connect with {} is established".format(peer_to_connect[0]))
@@ -144,7 +145,7 @@ def thread_read():
                     message_request["id_peer"] = my_id_peer
                     aux_peer.send(send_client_message(message_request))
                 except:
-                    print("id_peer: {} not found...".format(id_to_connect))
+                    print("id_peer: {} not found hehe======...".format(id_to_connect))
                     continue
         if is_command(msg,'/dis_connection'):
             #to disconnect with someone
@@ -235,7 +236,8 @@ def thread_server_listen():
 def thread_our_server_listen():
     while True:
         global socket_peer_list
-        conn, _ = ours_server.accept()
+        conn, addr = ours_server.accept()
+        print("address: ",addr)
         socket_peer_list.append(conn)
 
 def get_client_data_time_out(server):
