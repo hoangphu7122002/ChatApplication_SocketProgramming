@@ -238,6 +238,17 @@ def thread_our_server_listen():
         conn, _ = ours_server.accept()
         socket_peer_list.append(conn)
 
+def get_client_data_time_out(server):
+    server.settimeout(2.0)
+    try:
+        header_length = server.recv(HEADER_LENGTH)
+        message_length = int(header_length.decode("utf-8").strip())
+        data_res = server.recv(message_length)
+        data_res = pickle.loads(data_res)
+    except:
+        return False    
+    return data_res
+
 def thread_our_server_handle():
     while True:
         global socket_peer_list
@@ -245,7 +256,7 @@ def thread_our_server_handle():
             global active_conn
             global active_conn_sock
             if (peer != server) and (peer != ours_server):
-                data = get_client_data(peer)
+                data = get_client_data_time_out(peer)
                 if data:
                     if data["type"] == CHAT_PROTOCOL_CONNECT:
                         sock_and_conn = []
@@ -305,10 +316,10 @@ def thread_our_server_handle():
                         with open("{}/{}".format(name,file_name),'wb') as f:
                             f.write(file_data)
                         print("file {} transfer success from {}!!".format(file_name,peer_name))
-                else:
-                    #if no data
-                    socket_peer_list.remove(peer)
-                    peer.close()
+                # else:
+                #     #if no data
+                #     socket_peer_list.remove(peer)
+                #     peer.close()
                 
 if __name__ == "__main__":
     if len(sys.argv) != 5:
