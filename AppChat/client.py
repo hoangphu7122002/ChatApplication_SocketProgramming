@@ -8,12 +8,19 @@ from helper_function import *
 import time
 import os
 
-name = sys.argv[1]
-our_port = int(sys.argv[2])
-p2p_server_addr = sys.argv[3]
-p2p_server_port = int(sys.argv[4])
+from tkinter import *
+# from login import Loginform
+
+name = ""
+password = ""
+our_port = 6002
+p2p_server_addr = ""   # IPv4 server
+p2p_server_port = 5000   # Port server
+ours_server = ""
 # to modify later
+
 my_ip_addr = '127.0.0.1'
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # thread our_server
 active_conn = []
@@ -25,26 +32,122 @@ peer_list = []
 my_id_peer = None
 
 # to connect server
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.connect((p2p_server_addr, p2p_server_port))
+# server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# server.connect((p2p_server_addr, p2p_server_port))
 
 
-ours_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-ours_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-ours_server.bind(('', our_port))
-ours_server.listen(QUEUE_CLIENT)
+def login():
+    # getting form data
+    global name
+    global p2p_server_addr
+    global password
+    name = username.get()
+    password = pwd.get()
+    p2p_server_addr = IPv4.get()
+    # applying empty validation
+    if name == '' or password == '':
+        messageLabel.set("fill the empty field!!!")
+    else:
+        if name == "GiaPhong" and password == "123":
+            messageLabel.set("Login Succes")
+        elif name == "HoangPhu" and password == "123":
+            messageLabel.set("Login Succes")
+        elif name == "DacLoc" and password == "123":
+            messageLabel.set("Login Succes")
+        elif name == "NguyenTruong" and password == "123":
+            messageLabel.set("Login Succes")
+        else:
+            messageLabel.set("Wrong name or password!!!")
+
+    # connect_server()
+    if connect_server():
+        server.connect((p2p_server_addr, p2p_server_port))
+
+        message_first = {}
+        message_first["type"] = CHAT_PROTOCOL_HI
+        message_first["peer_name"] = name
+        message_first["port"] = our_port
+
+        server.send(send_client_message(message_first))
+        server_listen = Thread(target=thread_server_listen)
+        server_listen.start()
+
+        ours_server_listen = Thread(target=thread_our_server_listen)
+        ours_server_handle = Thread(target=thread_our_server_handle)
+        server_read = Thread(target=thread_read)
+        server_read.start()
+        ours_server_listen.start()
+        ours_server_handle.start()
+# defining login form function
+
+
+def Loginform():
+    global login_screen
+    login_screen = Tk()
+    # Setting title of screen
+    login_screen.title("Login Form")
+    # setting height and width of screen
+    login_screen.geometry("300x250")
+    # declaring variable
+    global messageLabel
+    global username
+    global pwd
+    global IPv4
+    username = StringVar()
+    pwd = StringVar()
+    IPv4 = StringVar()
+    messageLabel = StringVar()
+    # Creating layout of login form
+    Label(login_screen, width="300", text="Please enter details below",
+          bg="orange", fg="white").pack()
+    # name Label
+    Label(login_screen, text="Username").place(x=20, y=40)
+    # name textbox
+    Entry(login_screen, textvariable=username).place(x=90, y=42)
+    # pwd Label
+    Label(login_screen, text="password").place(x=20, y=80)
+    # pwd textbox
+    Entry(login_screen, textvariable=pwd, show="*").place(x=90, y=82)
+    # Label for displaying login status[success/failed]
+
+    Label(login_screen, text="Server IPv4").place(x=20, y=120)
+    # name textbox
+    Entry(login_screen, textvariable=IPv4).place(x=90, y=122)
+    # pwd Label
+
+    Label(login_screen, text="", textvariable=messageLabel).place(x=80, y=180)
+    # Login button
+
+    Button(login_screen, text="Login", width=10, height=1,
+           bg="orange", command=login).place(x=105, y=150)
+
+    login_screen.mainloop()
 
 
 def connect_server():
-    password = input('>password:')
+    global messageLabel
+    global ours_server
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.connect((p2p_server_addr, p2p_server_port))
+
+    ours_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    ours_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    ours_server.bind(('', our_port))
+    ours_server.listen(QUEUE_CLIENT)
+
+    messageLabel.set("Connection Success!!!")
+
     message = {}
     message["user_name"] = name
     message["password"] = password
     message["type"] = AUTHENTICATION
+
     server.send(send_client_message(message))
 
     print("wait to connect server")
     data_auth = get_client_data(server)
+
     if data_auth["user_name"] != "SERVER" or data_auth["type"] != AUTH_PROTOCOL_SUCCESS:
         print("close connection!!!")
         server.close()
@@ -356,24 +459,10 @@ def thread_our_server_handle():
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 5:
-        print('Error: usage: ./' +
-              sys.argv[0] + ' <username> <your_listen_port> <IP_P2P_server> <Port>')
-        sys.exit(0)
+    # if len(sys.argv) != 5:
+    #     print('Error: usage: ./' +
+    #           sys.argv[0] + ' <username> <your_listen_port> <IP_P2P_server> <Port>')
+    #     sys.exit(0)
 
-     # LOGIN
-    if connect_server():
-        message_first = {}
-        message_first["type"] = CHAT_PROTOCOL_HI
-        message_first["peer_name"] = name
-        message_first["port"] = our_port
-
-        server.send(send_client_message(message_first))
-        server_listen = Thread(target=thread_server_listen)
-        server_listen.start()
-    ours_server_listen = Thread(target=thread_our_server_listen)
-    ours_server_handle = Thread(target=thread_our_server_handle)
-    server_read = Thread(target=thread_read)
-    server_read.start()
-    ours_server_listen.start()
-    ours_server_handle.start()
+    # LOGIN
+    Loginform()
