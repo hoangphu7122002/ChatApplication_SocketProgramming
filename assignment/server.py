@@ -1,7 +1,6 @@
 import socket
 import threading
 from hyper_parameter import *
-import select
 import pickle
 import sys
 
@@ -71,13 +70,30 @@ class Server:
                 return client[1]
     
     def conservation(self,client_socket):
-        global save_remove
+        save_remove = None
         while True:
             try:
                 message_user = self.receive_message(client_socket)
                 if message_user == False:
                     break
-                if message_user["type"] == CHAT_PROTOCOL_HI:
+                if message_user["type"] == CHAT_PROTOCOL_CHAT_GROUP:
+                    message_send = {"user_name" : "Server",
+                    "type" : CHAT_PROTOCOL_CHAT_GROUP_ACK}
+                    message_send["peer_name"] = message_user["peer_name"]
+                    message_send["message"] = message_user["message"]
+                    for cl_socket in self.sockets_list:
+                        if cl_socket is not client_socket and cl_socket is not self.server_side:
+                            cl_socket.send(self.server_message(message_send))
+                elif message_user["type"] == CHAT_PROTOCOL_TRANSFER_GROUP:
+                    message_send = {"user_name" : "Server",
+                    "type" : CHAT_PROTOCOL_TRANSFER_GROUP_ACK}
+                    message_send["peer_name"] = message_user["peer_name"]
+                    message_send["data"] = message_user["data"]
+                    message_send["file_name"] = message_user["file_name"]
+                    for cl_socket in self.sockets_list:
+                        if cl_socket is not client_socket and cl_socket is not self.server_side:
+                            cl_socket.send(self.server_message(message_send))
+                elif message_user["type"] == CHAT_PROTOCOL_HI:
                     #================message definition==================
                     message_send = {"user_name" : "Server",
                     "type" : CHAT_PROTOCOL_HI_ACK}
@@ -104,7 +120,7 @@ class Server:
                     client_socket.send(self.server_message(message_send))
                     self.sockets_list.remove(client_socket)
                     self.remove_client(client_socket)
-                    self.clients_banded[message_send["peer_name"]] = 0
+                    self.clients_banded[message_user["peer_name"]] = 0
                     client_socket.close()
                     return 
                 elif message_user["type"] == CHAT_PROTOCOL_UPDATE:
@@ -117,7 +133,7 @@ class Server:
                 self.sockets_list.remove(client_socket)
                 self.remove_client(client_socket)
                 client_socket.close()
-                self.clients_banded[message_send["peer_name"]] = 0
+                self.clients_banded[message_user["peer_name"]] = 0
                 return
     
     def run(self):

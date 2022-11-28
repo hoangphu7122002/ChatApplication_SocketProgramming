@@ -1,4 +1,3 @@
-str_std = "123"
-str_std1 = "124"
+with open("{}/{}".format("HP7122002","test1.txt"),"r") as f:
 
-print(str_std.count(str_std1))
+    print(f.read())
