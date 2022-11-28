@@ -9,8 +9,9 @@ from tkinter import ttk
 # everything from chat.py file
 from chat import *
 
-PORT = 5050
-SERVER = "192.168.0.103"
+
+PORT = 1234
+SERVER = "172.17.21.149"
 ADDRESS = (SERVER, PORT)
 FORMAT = "utf-8"
 
@@ -76,8 +77,7 @@ class GUI:
                          font="Helvetica 14 bold",
                          command=lambda: self.goAhead(self.entryName.get()))
 
-        self.go.place(relx=0.4,
-                      rely=0.55)
+        self.go.place(relx=0.4, rely=0.55)
         self.Window.mainloop()
 
     def goAhead(self, name):

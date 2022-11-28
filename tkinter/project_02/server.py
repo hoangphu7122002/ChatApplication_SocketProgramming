@@ -5,7 +5,7 @@ import socket
 import threading
 
 # Choose a port that is free
-PORT = 5000
+PORT = 1234
 
 # An IPv4 address is obtained
 # for the server.

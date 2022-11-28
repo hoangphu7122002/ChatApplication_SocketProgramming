@@ -21,7 +21,7 @@ def send():
     user = e.get().lower()
 
     if (user == "hello"):
-        txt.insert(END, "\n" + "Bot -> Hi there, how can I help?")
+        txt.insert(END, "\n" + "Hi there, how can I help? <-Bot")
 
     elif (user == "hi" or user == "hii" or user == "hiiii"):
         txt.insert(END, "\n" + "Bot -> Hi there, what can I do for you?")
