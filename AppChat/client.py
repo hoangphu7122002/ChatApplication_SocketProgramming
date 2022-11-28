@@ -13,7 +13,7 @@ from tkinter import *
 
 name = ""
 password = ""
-our_port = 6002
+our_port = 6001
 p2p_server_addr = ""   # IPv4 server
 p2p_server_port = 5000   # Port server
 ours_server = ""
@@ -45,24 +45,10 @@ def login():
     password = pwd.get()
     p2p_server_addr = IPv4.get()
     # applying empty validation
-    if name == '' or password == '':
-        messageLabel.set("fill the empty field!!!")
-    else:
-        if name == "GiaPhong" and password == "123":
-            messageLabel.set("Login Succes")
-        elif name == "HoangPhu" and password == "123":
-            messageLabel.set("Login Succes")
-        elif name == "DacLoc" and password == "123":
-            messageLabel.set("Login Succes")
-        elif name == "NguyenTruong" and password == "123":
-            messageLabel.set("Login Succes")
-        else:
-            messageLabel.set("Wrong name or password!!!")
 
     # connect_server()
     if connect_server():
-        server.connect((p2p_server_addr, p2p_server_port))
-
+        global server
         message_first = {}
         message_first["type"] = CHAT_PROTOCOL_HI
         message_first["peer_name"] = name
@@ -127,7 +113,8 @@ def Loginform():
 def connect_server():
     global messageLabel
     global ours_server
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    global server
+    # server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.connect((p2p_server_addr, p2p_server_port))
 
     ours_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
