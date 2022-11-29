@@ -344,7 +344,7 @@ def thread_server_listen():
                     server.close()
                     print("Server:> Closing connections with server.......")
                     print('\n\nGoodbye '+name+'!\n')
-                    # input("Press Enter to continue...")
+                    input("Press Enter to continue...")
                     sys.exit(0)
                 if data["type"] == CHAT_PROTOCOL_UPDATE_ACK:
                     peer_list = data["peer_list"]
