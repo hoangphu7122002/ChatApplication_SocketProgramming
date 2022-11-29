@@ -47,15 +47,20 @@ def main_layout(clients):
     
     # client_show.tag_configure("tag_name", justify="center")
     # Client show on the home page
-    client_show.config(state=NORMAL)
-    for i in range(10):
-        client = Label(client_show, width = 60, height=4, bg="#3c4043", text=f"Client {i}", justify=LEFT)
+    client_show.delete("1.0", "END")
+    peer_color = "#fa8072"
+    for peer in peer_list:
+        # if (peer[0] != self.name):
+        for p in active_conn:
+            if peer[0] == p[0]:
+                peer_color = "#5dbb63"
+        client = Label(self.client_show, width = 60, height=4, bg=peer_color, text=f"Name: {peer[0]}\nIP: {peer[2]}", justify=LEFT)
         client_show.window_create("end", window=client)
-        client.bind("<Button-1>", lambda e: func())
+        client.bind("<Button-1>", lambda e: func((peer[3])))
         client_show.insert("end","\n")
         client_show.insert("end","\n")
-    # for client in clients:
-    #     client_name = client
+        client_show.insert("end","\n")
+
     Window.mainloop()
 
 main_layout(1)
