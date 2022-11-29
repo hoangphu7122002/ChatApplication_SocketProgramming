@@ -9,7 +9,7 @@ import time
 import os
 
 from tkinter import *
-from chat import *
+# from chat import *
 
 name = ""
 password = ""
@@ -154,9 +154,11 @@ def thread_read():
     global chat_message
     global txt
     global msg
+    global entry
 
     msg = chat_message.get()
 
+    entry.delete(0, END)
     txt.insert(END, "\n" + msg)
     while True:
         global peer_list
@@ -474,6 +476,7 @@ def prepareMessage():
     global chat_message
     global txt
     global msg
+    global entry
 
     root = Tk()
     root.title("Chatbot")
@@ -496,8 +499,10 @@ def prepareMessage():
     scrollbar = Scrollbar(txt)
     scrollbar.place(relheight=1, relx=0.974)
 
-    e = Entry(root, bg="#2C3E50", fg=TEXT_COLOR,
-              font=FONT, width=55, textvariable=chat_message).grid(row=2, column=0)
+    entry = Entry(root, bg="#2C3E50", fg=TEXT_COLOR,
+                  font=FONT, width=55, textvariable=chat_message)
+    entry.grid(row=2, column=0)
+    # entry.pack()
 
     Button(root, text="Send", font=FONT_BOLD, bg=BG_GRAY,
            command=thread_read).grid(row=2, column=1)
