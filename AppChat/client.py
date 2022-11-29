@@ -8,12 +8,19 @@ from helper_function import *
 import time
 import os
 
-name = sys.argv[1]
-our_port = int(sys.argv[2])
-p2p_server_addr = sys.argv[3]
-p2p_server_port = int(sys.argv[4])
+from tkinter import *
+# from chat import *
+
+name = ""
+password = ""
+our_port = 6001
+p2p_server_addr = ""   # IPv4 server
+p2p_server_port = 5000   # Port server
+ours_server = ""
 # to modify later
+
 my_ip_addr = '127.0.0.1'
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # thread our_server
 active_conn = []
@@ -24,27 +31,118 @@ socket_peer_list = []
 peer_list = []
 my_id_peer = None
 
-# to connect server
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.connect((p2p_server_addr, p2p_server_port))
+
+def send():
+    global chat_message
+    global txt
+    global msg
+
+    msg = chat_message.get()
+
+    txt.insert(END, "\n" + msg)
 
 
-ours_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-ours_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-ours_server.bind(('', our_port))
-ours_server.listen(QUEUE_CLIENT)
+def login():
+    # getting form data
+    global name
+    global p2p_server_addr
+    global password
+    global login_screen
+    name = username.get()
+    password = pwd.get()
+    p2p_server_addr = IPv4.get()
+    # applying empty validation
+
+    # connect_server()
+    if connect_server():
+        login_screen.destroy()
+        global server
+        message_first = {}
+        message_first["type"] = CHAT_PROTOCOL_HI
+        message_first["peer_name"] = name
+        message_first["port"] = our_port
+
+        server.send(send_client_message(message_first))
+        server_listen = Thread(target=thread_server_listen)
+        server_listen.start()
+
+        ours_server_listen = Thread(target=thread_our_server_listen)
+        ours_server_handle = Thread(target=thread_our_server_handle)
+        server_read = Thread(target=prepareMessage)
+        server_read.start()
+        ours_server_listen.start()
+        ours_server_handle.start()
+# defining login form function
+
+
+def Loginform():
+    global login_screen
+    login_screen = Tk()
+    # Setting title of screen
+    login_screen.title("Login Form")
+    # setting height and width of screen
+    login_screen.geometry("300x250")
+    # declaring variable
+    global messageLabel
+    global username
+    global pwd
+    global IPv4
+    username = StringVar()
+    pwd = StringVar()
+    IPv4 = StringVar()
+    messageLabel = StringVar()
+    # Creating layout of login form
+    Label(login_screen, width="300", text="Please enter details below",
+          bg="orange", fg="white").pack()
+    # name Label
+    Label(login_screen, text="Username").place(x=20, y=40)
+    # name textbox
+    Entry(login_screen, textvariable=username).place(x=90, y=42)
+    # pwd Label
+    Label(login_screen, text="password").place(x=20, y=80)
+    # pwd textbox
+    Entry(login_screen, textvariable=pwd, show="*").place(x=90, y=82)
+    # Label for displaying login status[success/failed]
+
+    Label(login_screen, text="Server IPv4").place(x=20, y=120)
+    # name textbox
+    Entry(login_screen, textvariable=IPv4).place(x=90, y=122)
+    # pwd Label
+
+    Label(login_screen, text="", textvariable=messageLabel).place(x=80, y=180)
+    # Login button
+
+    Button(login_screen, text="Login", width=10, height=1,
+           bg="orange", command=login).place(x=105, y=150)
+
+    login_screen.mainloop()
 
 
 def connect_server():
-    password = input('>password:')
+    global messageLabel
+    global ours_server
+    global server
+    # server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.connect((p2p_server_addr, p2p_server_port))
+
+    ours_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    ours_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    ours_server.bind(('', our_port))
+    ours_server.listen(QUEUE_CLIENT)
+
+    messageLabel.set("Connection Success!!!")
+
     message = {}
     message["user_name"] = name
     message["password"] = password
     message["type"] = AUTHENTICATION
+
     server.send(send_client_message(message))
 
     print("wait to connect server")
     data_auth = get_client_data(server)
+
     if data_auth["user_name"] != "SERVER" or data_auth["type"] != AUTH_PROTOCOL_SUCCESS:
         print("close connection!!!")
         server.close()
@@ -53,12 +151,30 @@ def connect_server():
 
 
 def thread_read():
+    global chat_message
+    global txt
+    global msg
+    global entry
+
+    msg = chat_message.get()
+
+    entry.delete(0, END)
+    txt.insert(END, "\n" + msg)
     while True:
         global peer_list
         global my_id_peer
         global socket_peer_list
         global active_conn
-        msg = input('>:')
+
+
+###############
+
+        # msg = chat_message.get()
+        # txt.insert(END, '\n' + msg)
+
+###############
+
+        # msg = input('>:')
         if is_command(msg, '/transfer_file'):
             path_file = msg.split(' ')[2]
             id_peer = msg.split(' ')[1]
@@ -205,6 +321,7 @@ def thread_read():
                 print("invalid id peer")
         else:
             pass
+        msg = '\n'
 
 
 def thread_server_listen():
@@ -227,7 +344,7 @@ def thread_server_listen():
                     server.close()
                     print("Server:> Closing connections with server.......")
                     print('\n\nGoodbye '+name+'!\n')
-                    input("Press Enter to continue...")
+                    # input("Press Enter to continue...")
                     sys.exit(0)
                 if data["type"] == CHAT_PROTOCOL_UPDATE_ACK:
                     peer_list = data["peer_list"]
@@ -355,25 +472,51 @@ def thread_our_server_handle():
                 #     peer.close()
 
 
+def prepareMessage():
+    global root
+    global chat_message
+    global txt
+    global msg
+    global entry
+
+    root = Tk()
+    root.title("Chatbot")
+    BG_GRAY = "#ABB2B9"
+    BG_COLOR = "#17202A"
+    TEXT_COLOR = "#EAECEE"
+    FONT = "Helvetica 14"
+    FONT_BOLD = "Helvetica 13 bold"
+
+    chat_message = StringVar()
+
+    # chat_message.delete(0, END)
+
+    Label(root, bg=BG_COLOR, fg=TEXT_COLOR, text="Welcome", font=FONT_BOLD, pady=10, width=20, height=1).grid(
+        row=0)
+
+    txt = Text(root, bg=BG_COLOR, fg=TEXT_COLOR, font=FONT, width=60)
+    txt.grid(row=1, column=0, columnspan=2)
+
+    scrollbar = Scrollbar(txt)
+    scrollbar.place(relheight=1, relx=0.974)
+
+    entry = Entry(root, bg="#2C3E50", fg=TEXT_COLOR,
+                  font=FONT, width=55, textvariable=chat_message)
+    entry.grid(row=2, column=0)
+    # entry.pack()
+
+    Button(root, text="Send", font=FONT_BOLD, bg=BG_GRAY,
+           command=thread_read).grid(row=2, column=1)
+    # txt.insert(END, '\n' + chat_message)
+
+    root.mainloop()
+
+
 if __name__ == "__main__":
-    if len(sys.argv) != 5:
-        print('Error: usage: ./' +
-              sys.argv[0] + ' <username> <your_listen_port> <IP_P2P_server> <Port>')
-        sys.exit(0)
+    # if len(sys.argv) != 5:
+    #     print('Error: usage: ./' +
+    #           sys.argv[0] + ' <username> <your_listen_port> <IP_P2P_server> <Port>')
+    #     sys.exit(0)
 
-     # LOGIN
-    if connect_server():
-        message_first = {}
-        message_first["type"] = CHAT_PROTOCOL_HI
-        message_first["peer_name"] = name
-        message_first["port"] = our_port
-
-        server.send(send_client_message(message_first))
-        server_listen = Thread(target=thread_server_listen)
-        server_listen.start()
-    ours_server_listen = Thread(target=thread_our_server_listen)
-    ours_server_handle = Thread(target=thread_our_server_handle)
-    server_read = Thread(target=thread_read)
-    server_read.start()
-    ours_server_listen.start()
-    ours_server_handle.start()
+    # LOGIN
+    Loginform()
