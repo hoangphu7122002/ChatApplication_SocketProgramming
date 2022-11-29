@@ -8,8 +8,9 @@ from helper_function import *
 import time
 import os
 
+from tkinter.ttk import *
 from tkinter import *
-# from chat import *
+
 
 name = ""
 password = ""
@@ -32,14 +33,35 @@ peer_list = []
 my_id_peer = None
 
 
-def send():
-    global chat_message
-    global txt
-    global msg
+def homeLayout():
 
-    msg = chat_message.get()
+    root = Tk()
+    # Set Geometry(widthxheight)
+    root.geometry('500x500')
 
-    txt.insert(END, "\n" + msg)
+    # Create style Object
+    style = Style()
+
+    style.configure('TButton', font=('calibri', 20, 'bold'),
+                    borderwidth='4')
+
+    # Changes will be reflected
+    # by the movement of mouse.
+    style.map('TButton', foreground=[('active', '!disabled', 'green')],
+              background=[('active', 'black')])
+
+    # button 1
+    showPeersSignal = "show_peers"
+    btn1 = Button(root, text='Show Peers',
+                  command=lambda: processSignal(showPeersSignal))
+    btn1.grid(row=0, column=1, padx=50)
+
+    # button 2
+    btn2 = Button(root, text='Group', command=None)
+    btn2.grid(row=0, column=2, pady=10)
+
+    # Execute Tkinter
+    root.mainloop()
 
 
 def login():
@@ -68,7 +90,7 @@ def login():
 
         ours_server_listen = Thread(target=thread_our_server_listen)
         ours_server_handle = Thread(target=thread_our_server_handle)
-        server_read = Thread(target=prepareMessage)
+        server_read = Thread(target=thread_read)
         server_read.start()
         ours_server_listen.start()
         ours_server_handle.start()
@@ -150,178 +172,185 @@ def connect_server():
     return True
 
 
+def processSignal(signal):
+    global chat_message
+    global txt
+    global entry
+    msg = signal
+
+    global peer_list
+    global my_id_peer
+    global socket_peer_list
+    global active_conn
+
+
+###############
+
+    # msg = chat_message.get()
+    # txt.insert(END, '\n' + msg)
+
+###############
+
+    # msg = input('>:')
+    if is_command(msg, 'transfer_file'):
+        path_file = msg.split(' ')[2]
+        id_peer = msg.split(' ')[1]
+        if os.path.exists("{}/{}".format(name, path_file)) == False:
+            print("file {} not exist!!".format(path_file))
+        try:
+            id_peer = int(id_peer)
+            if is_already_Connected(active_conn, id_peer):
+                peer_to_send = get_sockpeer_element(
+                    active_conn_sock, id_peer)
+                message_request = {}
+                message_request["type"] = CHAT_PROTOCOL_TRANSFER_FILE
+                message_request["peer_name"] = name
+                message_request["port"] = our_port
+                message_request["ip_peer"] = my_ip_addr
+                message_request["id_peer"] = my_id_peer
+                message_request["file_name"] = path_file
+                data = open("{}/{}".format(name, path_file), 'rb').read()
+                message_request["data"] = data
+                peer_to_send.sendall(send_client_message(message_request))
+                print("file {} has been send to: {}".format(
+                    path_file, id_peer))
+            else:
+                print("id_peer: {} not found...".format(id_peer_to_send))
+        except:
+            print("invalid id peer")
+    if is_command(msg, 'transfer_group'):
+        path_file = msg.split(' ')[1]
+        if os.path.exists("{}/{}".format(name, path_file)) == False:
+            print("file {} not exist!!".format(path_file))
+        message_request = {}
+        message_request["type"] = CHAT_PROTOCOL_TRANSFER_GROUP
+        message_request["peer_name"] = name
+        message_request["port"] = our_port
+        message_request["id_peer"] = my_id_peer
+        message_request["file_name"] = path_file
+        data = open("{}/{}".format(name, path_file), 'rb').read()
+        message_request["data"] = data
+        server.send(send_client_message(message_request))
+    if is_command(msg, 'chat_group'):
+        message_request = {}
+        message_request["type"] = CHAT_PROTOCOL_CHAT_GROUP
+        message_request["peer_name"] = name
+        message_request["port"] = our_port
+        message_request["id_peer"] = my_id_peer
+        message_request["message"] = get_msg_to_send(msg, 1)
+        server.send(send_client_message(message_request))
+    if is_command(msg, 'quit'):
+        message_request = {}
+        message_request["type"] = CHAT_PROTOCOL_BYE
+        message_request["peer_name"] = name
+        message_request["port"] = our_port
+        message_request["id_peer"] = my_id_peer
+        server.send(send_client_message(message_request))
+    # if is_command(msg, 'update'):
+    #     message_request = {}
+    #     message_request["type"] = CHAT_PROTOCOL_UPDATE
+    #     message_request["peer_name"] = name
+    #     message_request["port"] = our_port
+    #     # message_request["id_peer"] = my_id_peer
+    #     message_request["id_peer"] = my_id_peer
+        server.send(send_client_message(message_request))
+    if is_command(msg, 'help'):
+        print_help(name)
+    if is_command(msg, 'show_connection'):
+        print_conn_table(name, active_conn)
+    if is_command(msg, 'show_peers'):
+        message_request = {}
+        message_request["type"] = CHAT_PROTOCOL_UPDATE
+        message_request["peer_name"] = name
+        message_request["port"] = our_port
+        # message_request["id_peer"] = my_id_peer
+        message_request["id_peer"] = my_id_peer
+        server.send(send_client_message(message_request))
+        print_peer_table(name, peer_list)
+
+    if is_command(msg, 'connection'):
+        # to connect with someone
+        peer_to_connect = []
+        id_to_connect = getPeerId(msg)
+        if not is_already_Connected(active_conn, id_to_connect) and id_to_connect != 0:
+            try:
+                peer_to_connect = get_peer_element(
+                    peer_list, id_to_connect)
+                print(peer_to_connect)
+                aux_peer = socket.socket(
+                    socket.AF_INET, socket.SOCK_STREAM)
+                print("peer_to_connect: ",
+                      peer_to_connect[2], peer_to_connect[1])
+                # aka: port, hostname
+                aux_peer.connect((peer_to_connect[2], peer_to_connect[1]))
+                socket_peer_list.append(aux_peer)
+                print("connect with {} is established".format(
+                    peer_to_connect[0]))
+                time.sleep(1)
+                message_request = {}
+                message_request["type"] = CHAT_PROTOCOL_CONNECT
+                message_request["peer_name"] = name
+                message_request["port"] = our_port
+                message_request["ip_peer"] = my_ip_addr
+                message_request["id_peer"] = my_id_peer
+                aux_peer.send(send_client_message(message_request))
+            except:
+                print("id_peer: {} not found hehe======...".format(id_to_connect))
+    if is_command(msg, 'dis_connection'):
+        # to disconnect with someone
+        aux_peer = []
+        peer_to_dis = []
+        id_to_dis = getPeerId(msg)
+        if is_already_Connected(active_conn, id_to_dis):
+            try:
+                aux_peer = get_sockpeer_element(
+                    active_conn_sock, id_to_dis)
+                peer_to_dis = get_peer_element(active_conn, id_to_dis)
+                print("disconnect with {}".format(peer_to_dis[0]))
+                time.sleep(1)
+                message_request = {}
+                message_request["type"] = CHAT_PROTOCOL_DIS
+                message_request["peer_name"] = name
+                message_request["port"] = our_port
+                message_request["ip_peer"] = my_ip_addr
+                message_request["id_peer"] = my_id_peer
+                aux_peer.send(send_client_message(message_request))
+            except:
+                print("id_peer: {} not found...".format(id_to_dis))
+        else:
+            print("id_peer: {} not found...".format(id_to_dis))
+    if is_command(msg, 'msg'):
+        # to communication with each other
+        msg_to_send = get_msg_to_send(msg)
+        try:
+            id_peer_to_send = getPeerId(msg)
+            if is_already_Connected(active_conn, id_peer_to_send):
+                peer_to_send = get_sockpeer_element(
+                    active_conn_sock, id_peer_to_send)
+                message_request = {}
+                message_request["type"] = CHAT_PROTOCOL_MSG
+                message_request["peer_name"] = name
+                message_request["port"] = our_port
+                message_request["ip_peer"] = my_ip_addr
+                message_request["id_peer"] = my_id_peer
+                message_request["message"] = msg_to_send
+                peer_to_send.send(send_client_message(message_request))
+                print('{}@{}:>{}'.format(name, get_peer_element(peer_list,
+                                                                id_peer_to_send)[0], msg_to_send))
+            else:
+                print("id_peer: {} not found...".format(id_peer_to_send))
+        except:
+            print("invalid id peer")
+    else:
+        pass
+
+
 def thread_read():
+    homeLayout()
     global chat_message
     global txt
     global msg
     global entry
-
-    msg = chat_message.get()
-
-    entry.delete(0, END)
-    txt.insert(END, "\n" + msg)
-    while True:
-        global peer_list
-        global my_id_peer
-        global socket_peer_list
-        global active_conn
-
-
-###############
-
-        # msg = chat_message.get()
-        # txt.insert(END, '\n' + msg)
-
-###############
-
-        # msg = input('>:')
-        if is_command(msg, '/transfer_file'):
-            path_file = msg.split(' ')[2]
-            id_peer = msg.split(' ')[1]
-            if os.path.exists("{}/{}".format(name, path_file)) == False:
-                print("file {} not exist!!".format(path_file))
-            try:
-                id_peer = int(id_peer)
-                if is_already_Connected(active_conn, id_peer):
-                    peer_to_send = get_sockpeer_element(
-                        active_conn_sock, id_peer)
-                    message_request = {}
-                    message_request["type"] = CHAT_PROTOCOL_TRANSFER_FILE
-                    message_request["peer_name"] = name
-                    message_request["port"] = our_port
-                    message_request["ip_peer"] = my_ip_addr
-                    message_request["id_peer"] = my_id_peer
-                    message_request["file_name"] = path_file
-                    data = open("{}/{}".format(name, path_file), 'rb').read()
-                    message_request["data"] = data
-                    peer_to_send.sendall(send_client_message(message_request))
-                    print("file {} has been send to: {}".format(
-                        path_file, id_peer))
-                else:
-                    print("id_peer: {} not found...".format(id_peer_to_send))
-            except:
-                print("invalid id peer")
-        if is_command(msg, '/transfer_group'):
-            path_file = msg.split(' ')[1]
-            if os.path.exists("{}/{}".format(name, path_file)) == False:
-                print("file {} not exist!!".format(path_file))
-                continue
-            message_request = {}
-            message_request["type"] = CHAT_PROTOCOL_TRANSFER_GROUP
-            message_request["peer_name"] = name
-            message_request["port"] = our_port
-            message_request["id_peer"] = my_id_peer
-            message_request["file_name"] = path_file
-            data = open("{}/{}".format(name, path_file), 'rb').read()
-            message_request["data"] = data
-            server.send(send_client_message(message_request))
-        if is_command(msg, '/chat_group'):
-            message_request = {}
-            message_request["type"] = CHAT_PROTOCOL_CHAT_GROUP
-            message_request["peer_name"] = name
-            message_request["port"] = our_port
-            message_request["id_peer"] = my_id_peer
-            message_request["message"] = get_msg_to_send(msg, 1)
-            server.send(send_client_message(message_request))
-        if is_command(msg, '/quit'):
-            message_request = {}
-            message_request["type"] = CHAT_PROTOCOL_BYE
-            message_request["peer_name"] = name
-            message_request["port"] = our_port
-            message_request["id_peer"] = my_id_peer
-            server.send(send_client_message(message_request))
-        if is_command(msg, '/update'):
-            message_request = {}
-            message_request["type"] = CHAT_PROTOCOL_UPDATE
-            message_request["peer_name"] = name
-            message_request["port"] = our_port
-            # message_request["id_peer"] = my_id_peer
-            message_request["id_peer"] = my_id_peer
-            server.send(send_client_message(message_request))
-        if is_command(msg, '/help'):
-            print_help(name)
-        if is_command(msg, '/show_connection'):
-            print_conn_table(name, active_conn)
-        if is_command(msg, '/show_peers'):
-            print_peer_table(name, peer_list)
-        if is_command(msg, '/connection'):
-            # to connect with someone
-            peer_to_connect = []
-            id_to_connect = getPeerId(msg)
-            if not is_already_Connected(active_conn, id_to_connect) and id_to_connect != 0:
-                try:
-                    peer_to_connect = get_peer_element(
-                        peer_list, id_to_connect)
-                    print(peer_to_connect)
-                    aux_peer = socket.socket(
-                        socket.AF_INET, socket.SOCK_STREAM)
-                    print("peer_to_connect: ",
-                          peer_to_connect[2], peer_to_connect[1])
-                    # aka: port, hostname
-                    aux_peer.connect((peer_to_connect[2], peer_to_connect[1]))
-                    socket_peer_list.append(aux_peer)
-                    print("connect with {} is established".format(
-                        peer_to_connect[0]))
-                    time.sleep(1)
-                    message_request = {}
-                    message_request["type"] = CHAT_PROTOCOL_CONNECT
-                    message_request["peer_name"] = name
-                    message_request["port"] = our_port
-                    message_request["ip_peer"] = my_ip_addr
-                    message_request["id_peer"] = my_id_peer
-                    aux_peer.send(send_client_message(message_request))
-                except:
-                    print("id_peer: {} not found hehe======...".format(id_to_connect))
-                    continue
-        if is_command(msg, '/dis_connection'):
-            # to disconnect with someone
-            aux_peer = []
-            peer_to_dis = []
-            id_to_dis = getPeerId(msg)
-            if is_already_Connected(active_conn, id_to_dis):
-                try:
-                    aux_peer = get_sockpeer_element(
-                        active_conn_sock, id_to_dis)
-                    peer_to_dis = get_peer_element(active_conn, id_to_dis)
-                    print("disconnect with {}".format(peer_to_dis[0]))
-                    time.sleep(1)
-                    message_request = {}
-                    message_request["type"] = CHAT_PROTOCOL_DIS
-                    message_request["peer_name"] = name
-                    message_request["port"] = our_port
-                    message_request["ip_peer"] = my_ip_addr
-                    message_request["id_peer"] = my_id_peer
-                    aux_peer.send(send_client_message(message_request))
-                except:
-                    print("id_peer: {} not found...".format(id_to_dis))
-                    continue
-            else:
-                print("id_peer: {} not found...".format(id_to_dis))
-        if is_command(msg, '/msg'):
-            # to communication with each other
-            msg_to_send = get_msg_to_send(msg)
-            try:
-                id_peer_to_send = getPeerId(msg)
-                if is_already_Connected(active_conn, id_peer_to_send):
-                    peer_to_send = get_sockpeer_element(
-                        active_conn_sock, id_peer_to_send)
-                    message_request = {}
-                    message_request["type"] = CHAT_PROTOCOL_MSG
-                    message_request["peer_name"] = name
-                    message_request["port"] = our_port
-                    message_request["ip_peer"] = my_ip_addr
-                    message_request["id_peer"] = my_id_peer
-                    message_request["message"] = msg_to_send
-                    peer_to_send.send(send_client_message(message_request))
-                    print('{}@{}:>{}'.format(name, get_peer_element(peer_list,
-                          id_peer_to_send)[0], msg_to_send))
-                else:
-                    print("id_peer: {} not found...".format(id_peer_to_send))
-            except:
-                print("invalid id peer")
-        else:
-            pass
-        msg = '\n'
 
 
 def thread_server_listen():
@@ -472,51 +501,6 @@ def thread_our_server_handle():
                 #     peer.close()
 
 
-def prepareMessage():
-    global root
-    global chat_message
-    global txt
-    global msg
-    global entry
-
-    root = Tk()
-    root.title("Chatbot")
-    BG_GRAY = "#ABB2B9"
-    BG_COLOR = "#17202A"
-    TEXT_COLOR = "#EAECEE"
-    FONT = "Helvetica 14"
-    FONT_BOLD = "Helvetica 13 bold"
-
-    chat_message = StringVar()
-
-    # chat_message.delete(0, END)
-
-    Label(root, bg=BG_COLOR, fg=TEXT_COLOR, text="Welcome", font=FONT_BOLD, pady=10, width=20, height=1).grid(
-        row=0)
-
-    txt = Text(root, bg=BG_COLOR, fg=TEXT_COLOR, font=FONT, width=60)
-    txt.grid(row=1, column=0, columnspan=2)
-
-    scrollbar = Scrollbar(txt)
-    scrollbar.place(relheight=1, relx=0.974)
-
-    entry = Entry(root, bg="#2C3E50", fg=TEXT_COLOR,
-                  font=FONT, width=55, textvariable=chat_message)
-    entry.grid(row=2, column=0)
-    # entry.pack()
-
-    Button(root, text="Send", font=FONT_BOLD, bg=BG_GRAY,
-           command=thread_read).grid(row=2, column=1)
-    # txt.insert(END, '\n' + chat_message)
-
-    root.mainloop()
-
-
 if __name__ == "__main__":
-    # if len(sys.argv) != 5:
-    #     print('Error: usage: ./' +
-    #           sys.argv[0] + ' <username> <your_listen_port> <IP_P2P_server> <Port>')
-    #     sys.exit(0)
 
-    # LOGIN
     Loginform()

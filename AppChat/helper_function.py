@@ -19,7 +19,7 @@ def print_help(name):
     print(
         '\t\t\tUsage: /msg [id] messsage\n\n\t\t\tExample: /msg 1 Hi everyone! :)')
 
-    input("Press Enter to continue...")
+    # input("Press Enter to continue...")
 
 
 def print_peer_table(name, peer_list):
@@ -28,7 +28,7 @@ def print_peer_table(name, peer_list):
     for peer in peer_list:
         print('+ Name: '+peer[0]+'\t | Port: '+str(peer[1]) +
               ' | Ip: '+peer[2]+' | Id_peer: '+str(peer[3]))
-    input("\n\n\nPress Enter to continue...")
+    # input("\n\n\nPress Enter to continue...")
 
 
 def print_conn_table(name, active_conn):
@@ -38,7 +38,7 @@ def print_conn_table(name, active_conn):
     for peer in active_conn:
         print('+ Name: '+peer[0]+'\t | Port: '+str(peer[1]) +
               ' | Ip: '+peer[2]+' | Id_peer: '+str(peer[3]))
-    input("\n\n\nPress Enter to continue...")
+    # input("\n\n\nPress Enter to continue...")
 
 
 def get_peer_element(peer_list, my_peer_id):
@@ -93,4 +93,4 @@ def get_client_data(server):
 
 
 def is_command(msg, str_cmd):
-    return msg.count(str_cmd)
+    return (msg == str_cmd)
