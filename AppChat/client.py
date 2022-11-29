@@ -321,6 +321,7 @@ def thread_read():
                 print("invalid id peer")
         else:
             pass
+        msg = '\n'
 
 
 def thread_server_listen():
@@ -343,7 +344,7 @@ def thread_server_listen():
                     server.close()
                     print("Server:> Closing connections with server.......")
                     print('\n\nGoodbye '+name+'!\n')
-                    input("Press Enter to continue...")
+                    # input("Press Enter to continue...")
                     sys.exit(0)
                 if data["type"] == CHAT_PROTOCOL_UPDATE_ACK:
                     peer_list = data["peer_list"]
@@ -506,7 +507,6 @@ def prepareMessage():
 
     Button(root, text="Send", font=FONT_BOLD, bg=BG_GRAY,
            command=thread_read).grid(row=2, column=1)
-
     # txt.insert(END, '\n' + chat_message)
 
     root.mainloop()
