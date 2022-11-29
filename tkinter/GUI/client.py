@@ -8,7 +8,7 @@ import socket
 import sys
 
 # server ip
-p2p_server_addr = socket.gethostname()
+p2p_server_addr = socket.gethostname(socket.gethostbyname())
 p2p_server_port = 1234
 
 name = ""
@@ -143,6 +143,7 @@ class GUI:
                 if (port[0] == name):
                     our_port = port[1]
                     break
+            print (our_port)
             ours_server.bind('', our_port)
             ours_server.listen(5)
 
