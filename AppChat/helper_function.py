@@ -93,4 +93,4 @@ def get_client_data(server):
 
 
 def is_command(msg, str_cmd):
-    return (msg == str_cmd)
+    return msg.count(str_cmd)

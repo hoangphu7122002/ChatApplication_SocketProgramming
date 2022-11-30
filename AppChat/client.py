@@ -34,7 +34,7 @@ my_id_peer = None
 
 
 def homeLayout():
-
+    global root
     root = Tk()
     # Set Geometry(widthxheight)
     root.geometry('500x500')
@@ -172,10 +172,15 @@ def connect_server():
     return True
 
 
+def func(name):
+    print(name)
+
+
 def processSignal(signal):
     global chat_message
     global txt
     global entry
+    global root
     msg = signal
 
     global peer_list
@@ -268,7 +273,51 @@ def processSignal(signal):
         server.send(send_client_message(message_request))
         print_peer_table(name, peer_list)
 
+####
+        client_show = Text(root,
+                           width=20,
+                           height=2,
+                           bg="#ffffff",
+                           fg="#EAECEE",
+                           font="Helvetica 14",
+                           padx=5,
+                           pady=5)
+        client_show.place(relheight=1,
+                          relwidth=1,
+                          rely=0.08)
+        client_show.config(state=DISABLED, cursor="arrow")
+
+        # Scroll bar
+        scrollbar = Scrollbar(root, command=client_show.yview)
+        scrollbar.place(relheight=1,
+                        relwidth=1,
+                        rely=0.08,
+                        relx=0.95)
+        client_show.configure(yscrollcommand=scrollbar.set)
+
+        # client_show.tag_configure("tag_name", justify="center")
+        # Client show on the home page
+        client_show.delete(1, END)
+        peer_color = "#fa8072"
+        count = 1
+        for peer in peer_list:
+            # if (peer[0] != self.name):
+            for p in active_conn:
+                if peer[0] == p[0]:
+                    peer_color = "#5dbb63"
+            client = Label(client_show, width=60, height=4, bg=peer_color,
+                           text=f"Name: {peer[0]}\nIP: {peer[2]}", justify=LEFT)
+            client_show.window_create("end", window=client)
+            client.bind("<Button-1>", lambda e,
+                        peer_num=peer[3]: processSignal('connection ' + str(peer_num)))
+            client_show.insert("end", "\n")
+            client_show.insert("end", "\n")
+            client_show.insert("end", "\n")
+            count += 1
+        ######
+
     if is_command(msg, 'connection'):
+        print(msg)
         # to connect with someone
         peer_to_connect = []
         id_to_connect = getPeerId(msg)
