@@ -650,11 +650,14 @@ def thread_our_server_handle():
                         print(
                             "{}@{} > {}".format(data["peer_name"], name, data["message"]))
                         global textCons
-                        textCons.config(state=NORMAL)
-                        textCons.insert(
-                            END, '\n' + data["peer_name"] + ': ' + data["message"])
+                        try:
+                            textCons.config(state=NORMAL)
+                            textCons.insert(
+                                END, '\n' + data["peer_name"] + ': ' + data["message"])
 
-                        textCons.config(state=DISABLED)
+                            textCons.config(state=DISABLED)
+                        except:
+                            pass
                     if data["type"] == CHAT_PROTOCOL_TRANSFER_FILE:
                         peer_name = data["peer_name"]
                         file_name = data["file_name"]
