@@ -238,6 +238,7 @@ def connect_server():
     global messageLabel
     global ours_server
     global server
+    global our_port
     # server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.connect((p2p_server_addr, p2p_server_port))
 
@@ -638,6 +639,12 @@ def thread_our_server_handle():
                     if data["type"] == CHAT_PROTOCOL_MSG:
                         print(
                             "{}@{} > {}".format(data["peer_name"], name, data["message"]))
+                        global textCons
+                        textCons.config(state=NORMAL)
+                        textCons.insert(
+                            END, '\n' + data["peer_name"] + ': ' + data["message"])
+
+                        textCons.config(state=DISABLED)
                     if data["type"] == CHAT_PROTOCOL_TRANSFER_FILE:
                         peer_name = data["peer_name"]
                         file_name = data["file_name"]
