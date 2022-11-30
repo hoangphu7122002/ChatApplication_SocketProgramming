@@ -32,6 +32,7 @@ socket_peer_list = []
 peer_list = []
 my_id_peer = None
 
+our_ports = [("HP7122002", 6000), ("GP2002", 6001), ("dakLoc", 6002), ("nguyen", 6003)]
 
 def homeLayout():
     global root
@@ -59,6 +60,12 @@ def homeLayout():
     # button 2
     btn2 = Button(root, text='Group', command=None)
     btn2.grid(row=0, column=2, pady=10)
+
+
+    # button 3
+    showConnSignal = "show_connections"
+    btn3 = Button(root, text='Show connection', command=lambda: processSignal(showConnSignal))
+    btn3.grid(row=0, column=2, pady=10)
 
     # Execute Tkinter
     root.mainloop()
@@ -298,8 +305,8 @@ def processSignal(signal):
         # client_show.tag_configure("tag_name", justify="center")
         # Client show on the home page
         client_show.delete(1, END)
-        peer_color = "#fa8072"
         for peer in peer_list:
+            peer_color = "#fa8072"
             if (peer[0] != name):
                 for p in active_conn:
                     if peer[0] == p[0]:
