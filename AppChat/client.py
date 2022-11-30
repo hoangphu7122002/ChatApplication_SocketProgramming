@@ -72,7 +72,62 @@ def chatLayout(peer_to_chat):
                       text=peer_to_chat[0],
                       font="Helvetica 13 bold",
                       pady=5)
-    labelHead.place(relwidth=1)
+    labelHead.place(relwidth=0.8, relx=0.1)
+
+    def back():
+        chatClient.destroy()
+        root.deiconify()
+
+    # Back Button
+    backBtn = Button(chatClient, text="<-", command=lambda: back())
+    backBtn.place(relwidth=0.1, relx=0, rely=0, relheight=0.08)
+
+    # create a Send file Button
+    buttonFileLayout = Button(chatClient,
+                              text="File",
+                              font="Helvetica 10 bold",
+                              width=10,
+                              bg="#ABB2B9", command=lambda: sendFileUI())
+    buttonFileLayout.place(relx=1,
+                           rely=0,
+                           relheight=0.08,
+                           relwidth=0.1,
+                           anchor='ne')
+
+    def sendFileUI():
+        chatClient.withdraw()
+        sendFileWindow = Toplevel()
+        sendFileWindow.config(height=70, width=350)
+        # The place for entering message
+        entryFilePath = Entry(sendFileWindow,
+                              bg="#2C3E50",
+                              fg="#EAECEE",
+                              font="Helvetica 13")
+        entryFilePath.place(relwidth=0.74,
+                            relheight=0.8,
+                            rely=0.008,
+                            relx=0.011)
+        entryFilePath.focus()
+
+        # create a Send Button
+        buttonFile = Button(sendFileWindow,
+                            text="Send",
+                            font="Helvetica 10 bold",
+                            width=10,
+                            bg="#ABB2B9",
+                            command=lambda: sendFile())
+        buttonFile.place(relx=0.77,
+                         rely=0.008,
+                         relheight=0.8,
+                         relwidth=0.197)
+
+        def sendFile():
+            msg = "transfer_file " + \
+                str(peer_to_chat[3]) + " " + str(entryFilePath.get())
+            print(msg)
+            processSignal(msg)
+            sendFileWindow.destroy()
+            chatClient.deiconify()
 
     line = Label(chatClient, width=450, bg="#ABB2B9")
     line.place(relwidth=1, rely=0.07, relheight=0.012)
@@ -110,7 +165,7 @@ def chatLayout(peer_to_chat):
     buttonMsg = Button(labelBottom,
                        text="Send",
                        font="Helvetica 10 bold",
-                       width=20,
+                       width=10,
                        bg="#ABB2B9",
                        command=lambda peer_to_chat_id=peer_to_chat[3]: [processSignal("msg " + str(peer_to_chat_id) + ' ' + entryMsg.get()), insertText()])
     buttonMsg.place(relx=0.77,
