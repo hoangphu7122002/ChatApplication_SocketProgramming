@@ -28,14 +28,27 @@ active_conn = []
 active_conn_sock = []
 socket_peer_list = []
 
+our_ports = [("HP7122002", 6000), ("GP2002", 6001),
+             ("dakLoc", 6002), ("nguyen", 6003)]
 
 peer_list = []
 my_id_peer = None
 
 our_ports = [("HP7122002", 6000), ("GP2002", 6001), ("dakLoc", 6002), ("nguyen", 6003)]
 
+def insertText():
+    global entryMsg
+    global textCons
+
+    textCons.config(state=NORMAL)
+    textCons.insert(END, '\n' + name + ': ' + entryMsg.get())
+    entryMsg.delete(0, END)
+    textCons.config(state=DISABLED)
+
+
 def chatLayout(peer_to_chat):
     global entryMsg
+    global textCons
     # global peer_list
     # name = name
     # to show chat window
@@ -97,7 +110,7 @@ def chatLayout(peer_to_chat):
                        font="Helvetica 10 bold",
                        width=20,
                        bg="#ABB2B9",
-                       command=lambda peer_to_chat_id=peer_to_chat[3]: [processSignal("msg " + str(peer_to_chat_id) + ' ' + entryMsg.get()), textCons.insert(END, "\n" + entryMsg.get())])
+                       command=lambda peer_to_chat_id=peer_to_chat[3]: [processSignal("msg " + str(peer_to_chat_id) + ' ' + entryMsg.get()), insertText()])
     buttonMsg.place(relx=0.77,
                     rely=0.008,
                     relheight=0.8,
@@ -157,6 +170,10 @@ def login():
     name = username.get()
     password = pwd.get()
     p2p_server_addr = IPv4.get()
+    for port in our_ports:
+        if (name == port[0]):
+            our_port = port[1]
+            break
     # applying empty validation
 
     # connect_server()
