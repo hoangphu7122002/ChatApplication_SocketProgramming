@@ -34,6 +34,83 @@ my_id_peer = None
 
 our_ports = [("HP7122002", 6000), ("GP2002", 6001), ("dakLoc", 6002), ("nguyen", 6003)]
 
+def chatLayout(peer_to_chat):
+    global entryMsg
+    # global peer_list
+    # name = name
+    # to show chat window
+    # root.deiconify()
+    # deiconify: show hidden window
+    # withdraw: hide window
+    chatClient = Toplevel()
+    root.withdraw()
+
+    chatClient.resizable(width=False,
+                         height=False)
+    chatClient.configure(width=470,
+                         height=550,
+                         bg="#17202A")
+
+    labelHead = Label(chatClient,
+                      bg="#17202A",
+                      fg="#EAECEE",
+                      text=peer_to_chat[0],
+                      font="Helvetica 13 bold",
+                      pady=5)
+    labelHead.place(relwidth=1)
+
+    line = Label(chatClient, width=450, bg="#ABB2B9")
+    line.place(relwidth=1, rely=0.07, relheight=0.012)
+
+    # Text console - show text message
+    textCons = Text(chatClient,
+                    width=20,
+                    height=2,
+                    bg="#17202A",
+                    fg="#EAECEE",
+                    font="Helvetica 14",
+                    padx=5,
+                    pady=5)
+    textCons.place(relheight=0.99,
+                   relwidth=1,
+                   rely=0.08)
+    textCons.config(cursor="arrow")
+    textCons.config(state=DISABLED)
+
+    labelBottom = Label(chatClient, bg="#ffffff", height=2, pady=6)
+    labelBottom.place(relwidth=1, rely=0.92)
+
+    # The place for entering message
+    entryMsg = Entry(labelBottom,
+                     bg="#2C3E50",
+                     fg="#EAECEE",
+                     font="Helvetica 13")
+    entryMsg.place(relwidth=0.74,
+                   relheight=0.8,
+                   rely=0.008,
+                   relx=0.011)
+    entryMsg.focus()
+
+    # create a Send Button
+    buttonMsg = Button(labelBottom,
+                       text="Send",
+                       font="Helvetica 10 bold",
+                       width=20,
+                       bg="#ABB2B9",
+                       command=lambda peer_to_chat_id=peer_to_chat[3]: [processSignal("msg " + str(peer_to_chat_id) + ' ' + entryMsg.get()), textCons.insert(END, "\n" + entryMsg.get())])
+    buttonMsg.place(relx=0.77,
+                    rely=0.008,
+                    relheight=0.8,
+                    relwidth=0.197)
+
+    # create a scroll bar
+    scrollbar = Scrollbar(textCons)
+    scrollbar.place(relheight=1, relx=0.974)
+    scrollbar.config(command=textCons.yview)
+
+    root.mainloop()
+
+
 def homeLayout():
     global root
     root = Tk()
@@ -350,6 +427,10 @@ def processSignal(signal):
                 aux_peer.send(send_client_message(message_request))
             except:
                 print("id_peer: {} not found hehe======...".format(id_to_connect))
+        # CHuyen sang layout CHat
+        peer_to_chat = get_peer_element(peer_list, id_to_connect)
+        chatLayout(peer_to_chat)
+
     if is_command(msg, 'dis_connection'):
         # to disconnect with someone
         aux_peer = []
@@ -373,8 +454,14 @@ def processSignal(signal):
                 print("id_peer: {} not found...".format(id_to_dis))
         else:
             print("id_peer: {} not found...".format(id_to_dis))
+
     if is_command(msg, 'msg'):
         # to communication with each other
+
+        ###########
+
+        ###########
+
         msg_to_send = get_msg_to_send(msg)
         try:
             id_peer_to_send = getPeerId(msg)
