@@ -28,7 +28,7 @@ def layout(name):
                       text=name,
                       font="Helvetica 13 bold",
                       pady=5)
-    labelHead.place(relwidth=1)
+    labelHead.place(relwidth=0.8)
 
     line = Label(root, width=450, bg="#ABB2B9")
     line.place(relwidth=1, rely=0.07, relheight=0.012)
