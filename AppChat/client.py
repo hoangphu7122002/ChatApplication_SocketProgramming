@@ -246,6 +246,7 @@ def connect_server():
     global messageLabel
     global ours_server
     global server
+    global our_port
     # server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.connect((p2p_server_addr, p2p_server_port))
 
@@ -446,8 +447,8 @@ def processSignal(signal):
             except:
                 print("id_peer: {} not found hehe======...".format(id_to_connect))
         # CHuyen sang layout CHat
-        # peer_to_chat = get_peer_element(peer_list, id_to_connect)
-        # chatLayout(peer_to_chat)
+        peer_to_chat = get_peer_element(peer_list, id_to_connect)
+        chatLayout(peer_to_chat)
 
     if is_command(msg, 'dis_connection'):
         # to disconnect with someone
@@ -565,7 +566,7 @@ def thread_our_server_listen():
 
 
 def get_client_data_time_out(server):
-    server.settimeout(5.0)
+    server.settimeout(2.0)
     try:
         header_length = server.recv(HEADER_LENGTH)
         message_length = int(header_length.decode("utf-8").strip())
