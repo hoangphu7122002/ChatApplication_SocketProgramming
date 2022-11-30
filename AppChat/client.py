@@ -34,7 +34,9 @@ socket_peer_list = []
 peer_list = []
 my_id_peer = None
 
-our_ports = [("HP7122002", 6000), ("GP2002", 6001), ("dakLoc", 6002), ("nguyen", 6003)]
+our_ports = [("HP7122002", 6000), ("GP2002", 6001),
+             ("dakLoc", 6002), ("nguyen", 6003)]
+
 
 def insertText():
     global entryMsg
@@ -151,10 +153,10 @@ def homeLayout():
     btn2 = Button(root, text='Group', command=None)
     btn2.grid(row=0, column=2, pady=10)
 
-
     # button 3
     showConnSignal = "show_connections"
-    btn3 = Button(root, text='Show connection', command=lambda: processSignal(showConnSignal))
+    btn3 = Button(root, text='Show connection',
+                  command=lambda: processSignal(showConnSignal))
     btn3.grid(row=0, column=2, pady=10)
 
     # Execute Tkinter
