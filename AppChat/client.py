@@ -97,19 +97,26 @@ def chatGroupLayout():
                            relwidth=0.1,
                            anchor='ne')
 
+    def on_closing():
+        if messagebox.askokcancel("Quit", "Do you want to quit!"):
+            chatClient.destroy()
+            # root.deiconify()
+
+    chatClient.protocol("WM_DELETE_WINDOW", on_closing)
+
     def sendFileUI():
         chatClient.withdraw()
         sendFileWindow = Toplevel()
-        sendFileWindow.config(height=70, width=350)
+        sendFileWindow.config(height=60, width=450)
         # The place for entering message
         entryFilePath = Entry(sendFileWindow,
                               bg="#2C3E50",
                               fg="#EAECEE",
                               font="Helvetica 13")
-        entryFilePath.place(relwidth=0.74,
+        entryFilePath.place(relwidth=0.55,
                             relheight=0.8,
                             rely=0.008,
-                            relx=0.011)
+                            relx=0.21)
         entryFilePath.focus()
 
         # create a Send Button
@@ -118,15 +125,28 @@ def chatGroupLayout():
                             font="Helvetica 10 bold",
                             width=10,
                             bg="#ABB2B9",
-                            command=lambda: sendFile())
+                            command=lambda: sendFile())  # Change this function
+
         buttonFile.place(relx=0.77,
                          rely=0.008,
                          relheight=0.8,
                          relwidth=0.197)
 
-        ####
+        # create a exit Button
+        buttonExit = Button(sendFileWindow,
+                            text="<-",
+                            font="Helvetica 10 bold",
+                            width=10,
+                            bg="#ABB2B9",
+                            command=lambda: [sendFileWindow.destroy(), chatClient.deiconify()])  # Change this function
+        buttonExit.place(relx=0,
+                         rely=0.008,
+                         relheight=0.8,
+                         relwidth=0.197)
+
+       ####
         def on_closing():
-            if messagebox.askokcancel("Quit", "Do you want to quit?"):
+            if messagebox.CANCEL:
                 sendFileWindow.destroy()
                 chatClient.deiconify()
 
@@ -223,6 +243,13 @@ def chatLayout(peer_to_chat):
         chatClient.destroy()
         root.deiconify()
 
+    def on_closing():
+        if messagebox.askokcancel("Quit", "Do you want to quit?"):
+            chatClient.destroy()
+            # chatClient.deiconify()
+
+    chatClient.protocol("WM_DELETE_WINDOW", on_closing)
+
     # Back Button
     backBtn = Button(chatClient, text="<-", command=lambda: back())
     backBtn.place(relwidth=0.1, relx=0, rely=0, relheight=0.08)
@@ -265,6 +292,13 @@ def chatLayout(peer_to_chat):
                          rely=0.008,
                          relheight=0.8,
                          relwidth=0.197)
+
+        def on_closing():
+            if messagebox.CANCEL:
+                sendFileWindow.destroy()
+                chatClient.deiconify()
+
+        sendFileWindow.protocol("WM_DELETE_WINDOW", on_closing)
 
         def sendFile():
             msg = "transfer_file " + \
@@ -354,6 +388,13 @@ def homeLayout():
     btn2.grid(row=0, column=2, pady=10)
 
     # Execute Tkinter
+    def on_closing():
+        # Logout
+        if messagebox.askokcancel("Quit", "Do you want to quit!"):
+            root.destroy()
+
+    root.protocol("WM_DELETE_WINDOW", on_closing)
+
     root.mainloop()
 
 
