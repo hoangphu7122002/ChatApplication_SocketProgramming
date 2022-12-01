@@ -49,12 +49,21 @@ def insertText():
     entryMsg.delete(0, END)
     textCons.config(state=DISABLED)
 
+def insertTextGroup():
+    global entryMsg
+    global textConsGroup
+
+    textConsGroup.config(state=NORMAL)
+    textConsGroup.insert(END, '\n' + name + ': ' + entryMsg.get())
+    entryMsg.delete(0, END)
+    textConsGroup.config(state=DISABLED)
+
 #################
 
 
 def chatGroupLayout():
     global entryMsg
-    global textCons
+    global textConsGroup
     # global peer_list
     # name = name
     # to show chat window
@@ -167,7 +176,7 @@ def chatGroupLayout():
     line.place(relwidth=1, rely=0.07, relheight=0.012)
 
     # Text console - show text message
-    textCons = Text(chatClient,
+    textConsGroup = Text(chatClient,
                     width=20,
                     height=2,
                     bg="#17202A",
@@ -175,11 +184,11 @@ def chatGroupLayout():
                     font="Helvetica 14",
                     padx=5,
                     pady=5)
-    textCons.place(relheight=0.99,
+    textConsGroup.place(relheight=0.99,
                    relwidth=1,
                    rely=0.08)
-    textCons.config(cursor="arrow")
-    textCons.config(state=DISABLED)
+    textConsGroup.config(cursor="arrow")
+    textConsGroup.config(state=DISABLED)
 
     labelBottom = Label(chatClient, bg="#ffffff", height=2, pady=6)
     labelBottom.place(relwidth=1, rely=0.92)
@@ -201,16 +210,16 @@ def chatGroupLayout():
                        font="Helvetica 10 bold",
                        width=10,
                        bg="#ABB2B9",
-                       command=lambda: [processSignal("chat_group " + entryMsg.get()), insertText()])
+                       command=lambda: [processSignal("chat_group " + entryMsg.get()), insertTextGroup()])
     buttonMsg.place(relx=0.77,
                     rely=0.008,
                     relheight=0.8,
                     relwidth=0.197)
 
     # create a scroll bar
-    scrollbar = Scrollbar(textCons)
+    scrollbar = Scrollbar(textConsGroup)
     scrollbar.place(relheight=1, relx=0.974)
-    scrollbar.config(command=textCons.yview)
+    scrollbar.config(command=textConsGroup.yview)
 
     root.mainloop()
 #################
@@ -793,13 +802,13 @@ def thread_server_listen():
                     _name = data["peer_name"]
                     msg = data["message"]
                     print("{}>{}".format(_name, msg))
-                    global textCons
+                    global textConsGroup
                     try:
-                        textCons.config(state=NORMAL)
-                        textCons.insert(
+                        textConsGroup.config(state=NORMAL)
+                        textConsGroup.insert(
                             END, '\n' + data["peer_name"] + ': ' + data["message"])
 
-                        textCons.config(state=DISABLED)
+                        textConsGroup.config(state=DISABLED)
                     except:
                         pass
                 if data["type"] == CHAT_PROTOCOL_HI_ACK:
