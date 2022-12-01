@@ -47,6 +47,141 @@ def insertText():
     entryMsg.delete(0, END)
     textCons.config(state=DISABLED)
 
+#################
+
+
+def chatGroupLayout():
+    global entryMsg
+    global textCons
+    # global peer_list
+    # name = name
+    # to show chat window
+    # root.deiconify()
+    # deiconify: show hidden window
+    # withdraw: hide window
+    chatClient = Toplevel()
+    root.withdraw()
+
+    chatClient.resizable(width=False,
+                         height=False)
+    chatClient.configure(width=470,
+                         height=550,
+                         bg="#17202A")
+
+    labelHead = Label(chatClient,
+                      bg="#17202A",
+                      fg="#EAECEE",
+                      text="GROUP CHAT",
+                      font="Helvetica 13 bold",
+                      pady=5)
+    labelHead.place(relwidth=0.8, relx=0.1)
+
+    def back():
+        chatClient.destroy()
+        root.deiconify()
+
+    # Back Button
+    backBtn = Button(chatClient, text="<-", command=lambda: back())
+    backBtn.place(relwidth=0.1, relx=0, rely=0, relheight=0.08)
+
+    # create a Send file Button
+    buttonFileLayout = Button(chatClient,
+                              text="File",
+                              font="Helvetica 10 bold",
+                              width=10,
+                              bg="#ABB2B9", command=lambda: sendFileUI())
+    buttonFileLayout.place(relx=1,
+                           rely=0,
+                           relheight=0.08,
+                           relwidth=0.1,
+                           anchor='ne')
+
+    def sendFileUI():
+        chatClient.withdraw()
+        sendFileWindow = Toplevel()
+        sendFileWindow.config(height=70, width=350)
+        # The place for entering message
+        entryFilePath = Entry(sendFileWindow,
+                              bg="#2C3E50",
+                              fg="#EAECEE",
+                              font="Helvetica 13")
+        entryFilePath.place(relwidth=0.74,
+                            relheight=0.8,
+                            rely=0.008,
+                            relx=0.011)
+        entryFilePath.focus()
+
+        # create a Send Button
+        buttonFile = Button(sendFileWindow,
+                            text="Send",
+                            font="Helvetica 10 bold",
+                            width=10,
+                            bg="#ABB2B9",
+                            command=lambda: sendFile())
+        buttonFile.place(relx=0.77,
+                         rely=0.008,
+                         relheight=0.8,
+                         relwidth=0.197)
+
+        def sendFile():
+            msg = "transfer_group " + str(entryFilePath.get())
+            print(msg)
+            processSignal(msg)
+            sendFileWindow.destroy()
+            chatClient.deiconify()
+
+    line = Label(chatClient, width=450, bg="#ABB2B9")
+    line.place(relwidth=1, rely=0.07, relheight=0.012)
+
+    # Text console - show text message
+    textCons = Text(chatClient,
+                    width=20,
+                    height=2,
+                    bg="#17202A",
+                    fg="#EAECEE",
+                    font="Helvetica 14",
+                    padx=5,
+                    pady=5)
+    textCons.place(relheight=0.99,
+                   relwidth=1,
+                   rely=0.08)
+    textCons.config(cursor="arrow")
+    textCons.config(state=DISABLED)
+
+    labelBottom = Label(chatClient, bg="#ffffff", height=2, pady=6)
+    labelBottom.place(relwidth=1, rely=0.92)
+
+    # The place for entering message
+    entryMsg = Entry(labelBottom,
+                     bg="#2C3E50",
+                     fg="#EAECEE",
+                     font="Helvetica 13")
+    entryMsg.place(relwidth=0.74,
+                   relheight=0.8,
+                   rely=0.008,
+                   relx=0.011)
+    entryMsg.focus()
+
+    # create a Send Button
+    buttonMsg = Button(labelBottom,
+                       text="Send",
+                       font="Helvetica 10 bold",
+                       width=10,
+                       bg="#ABB2B9",
+                       command=lambda: [processSignal("chat_group " + entryMsg.get()), insertText()])
+    buttonMsg.place(relx=0.77,
+                    rely=0.008,
+                    relheight=0.8,
+                    relwidth=0.197)
+
+    # create a scroll bar
+    scrollbar = Scrollbar(textCons)
+    scrollbar.place(relheight=1, relx=0.974)
+    scrollbar.config(command=textCons.yview)
+
+    root.mainloop()
+#################
+
 
 def chatLayout(peer_to_chat):
     global entryMsg
@@ -205,14 +340,8 @@ def homeLayout():
     btn1.grid(row=0, column=1, padx=50)
 
     # button 2
-    btn2 = Button(root, text='Group', command=None)
+    btn2 = Button(root, text='Group', command=lambda: chatGroupLayout())
     btn2.grid(row=0, column=2, pady=10)
-
-    # button 3
-    showConnSignal = "show_connections"
-    btn3 = Button(root, text='Show connection',
-                  command=lambda: processSignal(showConnSignal))
-    btn3.grid(row=0, column=2, pady=10)
 
     # Execute Tkinter
     root.mainloop()
@@ -397,6 +526,7 @@ def processSignal(signal):
         message_request["data"] = data
         server.send(send_client_message(message_request))
     if is_command(msg, 'chat_group'):
+
         message_request = {}
         message_request["type"] = CHAT_PROTOCOL_CHAT_GROUP
         message_request["peer_name"] = name
@@ -579,6 +709,15 @@ def thread_server_listen():
                     _name = data["peer_name"]
                     msg = data["message"]
                     print("{}>{}".format(_name, msg))
+                    global textCons
+                    try:
+                        textCons.config(state=NORMAL)
+                        textCons.insert(
+                            END, '\n' + data["peer_name"] + ': ' + data["message"])
+
+                        textCons.config(state=DISABLED)
+                    except:
+                        pass
                 if data["type"] == CHAT_PROTOCOL_HI_ACK:
                     global peer_list
                     global my_id_peer
