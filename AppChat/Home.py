@@ -9,6 +9,7 @@ def homeLayout():
 
     root = Tk()
     # Set Geometry(widthxheight)
+    root.title("Hello")
     root.geometry('500x500')
 
     # Create style Object

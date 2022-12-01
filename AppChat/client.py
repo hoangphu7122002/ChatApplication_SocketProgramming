@@ -10,6 +10,7 @@ import os
 
 from tkinter.ttk import *
 from tkinter import *
+from tkinter import ttk
 from tkinter import messagebox
 
 
@@ -380,8 +381,10 @@ def chatLayout(peer_to_chat):
 def homeLayout():
     global root
     global server
+    # global style
 
     root = Tk()
+    root.title(name)
     # Set Geometry(widthxheight)
     root.geometry('500x500')
 
@@ -398,12 +401,13 @@ def homeLayout():
 
     # button 1
     showPeersSignal = "show_peers"
-    btn1 = Button(root, text='Show Peers',
-                  command=lambda: processSignal(showPeersSignal))
+    btn1 = ttk.Button(root, style="TButton", text='Show Peers',
+                      command=lambda: processSignal(showPeersSignal))
     btn1.grid(row=0, column=1, padx=50)
 
     # button 2
-    btn2 = Button(root, text='Group', command=lambda: chatGroupLayout())
+    btn2 = ttk.Button(root, style="TButton", text='Group',
+                      command=lambda: chatGroupLayout())
     btn2.grid(row=0, column=2, pady=10)
 
     # Execute Tkinter
@@ -512,7 +516,7 @@ def connect_server():
         # server``.settimeout(1.0)
         server.connect((p2p_server_addr, p2p_server_port))
     except:
-        messageLabel.set("IP sai")
+        messageLabel.set("IP Is Unaccessible")
 
     ours_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -652,9 +656,9 @@ def processSignal(signal):
                            font="Helvetica 14",
                            padx=5,
                            pady=5)
-        client_show.place(relheight=1,
+        client_show.place(relheight=0.87,
                           relwidth=1,
-                          rely=0.08)
+                          rely=0.13)
         client_show.config(state=DISABLED, cursor="arrow")
 
         # Scroll bar
