@@ -1,14 +1,13 @@
-from tkinter import *
+import tkinter as tk
+from tkinter import messagebox
 
-root = Tk()
-scrollbar = Scrollbar(root)
-scrollbar.pack(side=RIGHT, fill=Y)
+root = tk.Tk()
 
-mylist = Listbox(root, yscrollcommand=scrollbar.set)
-for line in range(100):
-    mylist.insert(END, "This is line number " + str(line))
 
-mylist.pack(side=LEFT, fill=BOTH)
-scrollbar.config(command=mylist.yview)
+def on_closing():
+    if messagebox.askokcancel("Quit", "Do you want to quit?"):
+        root.destroy()
 
-mainloop()
+
+root.protocol("WM_DELETE_WINDOW", on_closing)
+root.mainloop()
