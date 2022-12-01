@@ -42,7 +42,7 @@ def layout(name):
                     font="Helvetica 14",
                     padx=5,
                     pady=5)
-    textCons.place(relheight=0.99,
+    textCons.place(relheight=0.84,
                    relwidth=1,
                    rely=0.08)
     textCons.config(cursor="arrow")

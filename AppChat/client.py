@@ -187,7 +187,7 @@ def chatGroupLayout():
                     font="Helvetica 14",
                     padx=5,
                     pady=5)
-    textConsGroup.place(relheight=0.99,
+    textConsGroup.place(relheight=0.84,
                    relwidth=1,
                    rely=0.08)
     textConsGroup.config(cursor="arrow")
@@ -353,7 +353,7 @@ def chatLayout(peer_to_chat):
                     font="Helvetica 14",
                     padx=5,
                     pady=5)
-    textCons.place(relheight=0.99,
+    textCons.place(relheight=0.84,
                    relwidth=1,
                    rely=0.08)
     textCons.config(cursor="arrow")
@@ -592,7 +592,7 @@ def processSignal(signal):
         id_peer = msg.split(' ')[1]
         if os.path.exists("{}/{}".format(name, path_file)) == False:
             print("file {} not exist!!".format(path_file))
-        try:
+        # try:
             id_peer = int(id_peer)
             if is_already_Connected(active_conn, id_peer):
                 peer_to_send = get_sockpeer_element(
@@ -611,8 +611,8 @@ def processSignal(signal):
                     path_file, id_peer))
             else:
                 print("id_peer: {} not found...".format(id_peer_to_send))
-        except:
-            print("invalid id peer")
+        # except:
+        #     print("invalid id peer or file not exist")
     if is_command(msg, 'transfer_group'):
         path_file = msg.split(' ')[1]
         if os.path.exists("{}/{}".format(name, path_file)) == False:
