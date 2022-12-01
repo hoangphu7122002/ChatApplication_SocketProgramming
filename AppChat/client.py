@@ -123,6 +123,10 @@ def chatGroupLayout():
                          relheight=0.8,
                          relwidth=0.197)
 
+        ####
+
+        ####
+
         def sendFile():
             msg = "transfer_group " + str(entryFilePath.get())
             print(msg)
@@ -361,6 +365,7 @@ def login():
         if (name == port[0]):
             our_port = port[1]
             break
+
     # applying empty validation
 
     # connect_server()
@@ -382,7 +387,8 @@ def login():
         server_read.start()
         ours_server_listen.start()
         ours_server_handle.start()
-# defining login form function
+
+    # defining login form function
 
 
 def Loginform():
@@ -434,7 +440,11 @@ def connect_server():
     global server
     global our_port
     # server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.connect((p2p_server_addr, p2p_server_port))
+    try:
+        # server``.settimeout(1.0)
+        server.connect((p2p_server_addr, p2p_server_port))
+    except:
+        messageLabel.set("IP sai")
 
     ours_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -442,7 +452,7 @@ def connect_server():
     ours_server.bind(('', our_port))
     ours_server.listen(QUEUE_CLIENT)
 
-    messageLabel.set("Connection Success!!!")
+    # messageLabel.set("Connection Success!!!")
 
     message = {}
     message["user_name"] = name
@@ -455,8 +465,9 @@ def connect_server():
     data_auth = get_client_data(server)
 
     if data_auth["user_name"] != "SERVER" or data_auth["type"] != AUTH_PROTOCOL_SUCCESS:
-        print("close connection!!!")
+        messageLabel.set("Failed Connection!!!")
         server.close()
+        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         return False
     return True
 
@@ -534,6 +545,7 @@ def processSignal(signal):
         message_request["id_peer"] = my_id_peer
         message_request["message"] = get_msg_to_send(msg, 1)
         server.send(send_client_message(message_request))
+        # print("Bao lau")
     if is_command(msg, 'quit'):
         message_request = {}
         message_request["type"] = CHAT_PROTOCOL_BYE

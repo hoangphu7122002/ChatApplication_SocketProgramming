@@ -168,8 +168,8 @@ class Server:
                     client_socket.send(self.server_message(auth_fail_connect))
                     continue
                 if self.check_auth(data_auth) == False:
-                    self.clients_banded[data_auth["user_name"]] = self.clients_banded.get(
-                        data_auth["user_name"], 0) + 1
+                    # self.clients_banded[data_auth["user_name"]] = self.clients_banded.get(
+                    #     data_auth["user_name"], 0) + 1
                     print("refuse connection!!! from {},{} with username: {}".format(
                         client_address[0], client_address[1], data_auth["user_name"]))
                     client_socket.send(self.server_message(auth_fail_connect))
