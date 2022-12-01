@@ -111,6 +111,9 @@ def chatGroupLayout():
         if messagebox.askokcancel("Quit", "Do you want to quit!"):
             chatClient.destroy()
             server.close()
+            ours_server.close()
+            for s in socket_peer_list:
+                s.close()
             sys.exit(2)
             # root.deiconify()
 
@@ -259,6 +262,9 @@ def chatLayout(peer_to_chat):
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
             chatClient.destroy()
             server.close()
+            ours_server.close()
+            for s in socket_peer_list:
+                s.close()
             sys.exit(2)
             # chatClient.deiconify()
 
@@ -425,6 +431,9 @@ def homeLayout():
         if messagebox.askokcancel("Quit", "Do you want to quit!"):
             root.destroy()
             server.close()
+            ours_server.close()
+            for s in socket_peer_list:
+                s.close()
             sys.exit(2)
 
     root.protocol("WM_DELETE_WINDOW", on_closing)
