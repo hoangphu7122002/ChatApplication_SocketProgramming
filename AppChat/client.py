@@ -10,6 +10,7 @@ import os
 
 from tkinter.ttk import *
 from tkinter import *
+from tkinter import messagebox
 
 
 name = ""
@@ -124,7 +125,12 @@ def chatGroupLayout():
                          relwidth=0.197)
 
         ####
+        def on_closing():
+            if messagebox.askokcancel("Quit", "Do you want to quit?"):
+                sendFileWindow.destroy()
+                chatClient.deiconify()
 
+        sendFileWindow.protocol("WM_DELETE_WINDOW", on_closing)
         ####
 
         def sendFile():
