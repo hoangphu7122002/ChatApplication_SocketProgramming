@@ -593,28 +593,28 @@ def processSignal(signal):
         id_peer = msg.split(' ')[1]
         if os.path.exists("{}/{}".format(name, path_file)) == False:
             print("file {} not exist!!".format(path_file))
-        # try:
-        id_peer = int(id_peer)
-        if is_already_Connected(active_conn, id_peer):
-            peer_to_send = get_sockpeer_element(
-                active_conn_sock, id_peer)
-            message_request = {}
-            message_request["type"] = CHAT_PROTOCOL_TRANSFER_FILE
-            message_request["peer_name"] = name
-            message_request["port"] = our_port
-            message_request["ip_peer"] = my_ip_addr
-            message_request["id_peer"] = my_id_peer
-            message_request["file_name"] = path_file
-            data = open("{}/{}".format(name, path_file), 'rb').read()
-            message_request["data"] = data
-            peer_to_send.sendall(send_client_message(message_request))
-            print("file {} has been send to: {}".format(
-                path_file, id_peer))
-            print("Sending time: ",(time.time()-time0)/60)
-        else:
-            print("id_peer: {} not found...".format(id_peer_to_send))
-        # except:
-        #     print("invalid id peer or file not exist")
+        try:
+            id_peer = int(id_peer)
+            if is_already_Connected(active_conn, id_peer):
+                peer_to_send = get_sockpeer_element(
+                    active_conn_sock, id_peer)
+                message_request = {}
+                message_request["type"] = CHAT_PROTOCOL_TRANSFER_FILE
+                message_request["peer_name"] = name
+                message_request["port"] = our_port
+                message_request["ip_peer"] = my_ip_addr
+                message_request["id_peer"] = my_id_peer
+                message_request["file_name"] = path_file
+                data = open("{}/{}".format(name, path_file), 'rb').read()
+                message_request["data"] = data
+                peer_to_send.sendall(send_client_message(message_request))
+                print("file {} has been send to: {}".format(
+                    path_file, id_peer))
+                print("Sending time: ",(time.time()-time0)/60)
+            else:
+                print("id_peer: {} not found...".format(id_peer_to_send))
+        except:
+            print("invalid id peer or file not exist")
     if is_command(msg, 'transfer_group'):
         path_file = msg.split(' ')[1]
         if os.path.exists("{}/{}".format(name, path_file)) == False:
